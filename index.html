@@ -169,6 +169,25 @@ details.mdev pre{margin-top:8px}
 .mast,.fhead{border-top:3px solid var(--brass)}
 .pinin{width:220px;text-align:center;font-size:28px;letter-spacing:.35em;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);font-family:inherit}
 .okmark.wait{background:var(--warn)}
+.cbx{position:relative}.cbx input{padding-right:42px}
+.cbx-x{position:absolute;right:7px;top:50%;transform:translateY(-50%);width:30px;height:30px;border:0;border-radius:15px;background:var(--line);color:var(--ink);font-size:18px;line-height:1;cursor:pointer;display:none;padding:0}
+.cbx.has .cbx-x{display:block}
+.cbx-pan{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:60;background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:0 12px 28px rgba(0,0,0,.14);padding:6px;max-height:280px;overflow:auto}
+.cbx.open .cbx-pan{display:block}
+.cbx-o{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:9px 12px;border-radius:8px;cursor:pointer;min-height:44px}
+.cbx-o:hover,.cbx-o.hi{background:var(--bg)}
+.cbx-o.on{background:var(--brass-soft);font-weight:500;box-shadow:inset 3px 0 0 var(--brass)}
+.cbx-ck{color:var(--brass);font-weight:600}
+.cbx-new{color:var(--brass);font-weight:500}
+.cbx-empty{padding:10px 12px;font-size:13px;color:var(--ink2)}
+input.tp{cursor:pointer;caret-color:transparent;background-image:linear-gradient(45deg,transparent 50%,var(--ink2) 50%),linear-gradient(135deg,var(--ink2) 50%,transparent 50%);background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%;background-size:5px 5px;background-repeat:no-repeat;padding-right:30px}
+.tphead{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:6px}
+.tpval{font-size:28px;font-weight:600;color:var(--brass);font-variant-numeric:tabular-nums}
+.tplab{font-size:13px;color:var(--ink2);margin:10px 0 6px}
+.tpgrid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px}.tpgrid.m{grid-template-columns:repeat(4,1fr)}
+.tpc{font:inherit;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:10px;min-height:42px;cursor:pointer;font-variant-numeric:tabular-nums}
+.tpc.on{border-color:var(--brass);background:var(--brass-soft);font-weight:600}
+.tpnav{display:grid;grid-template-columns:1fr 2fr;gap:8px;margin-top:16px}.tpnav .btn{width:100%}
 .sum h3{font-size:14px;color:var(--ink);font-weight:600;margin:12px 0 2px;font-weight:500}
 .small{font-size:12px;color:var(--ink2)}
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:2000}
@@ -188,6 +207,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
   <div class="start">
     <h1>RTR ลงพื้นที่ · สมุทรปราการ</h1>
     <p class="sub">ใส่รหัสทีม 6 หลัก</p>
+    <p class="small" style="margin:-6px 0 12px">ต้องต่ออินเทอร์เน็ต · ใส่รหัสทุกครั้งที่เปิดแอป</p>
     <input id="pinIn" class="pinin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off">
     <button class="btn pri" id="btnPin" type="button" style="margin-top:14px;min-width:200px">เข้าใช้งาน</button>
     <div class="stmsg" id="pinMsg"></div>
@@ -202,6 +222,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
     <button class="gpsbtn" id="btnStart" type="button"><span class="ico">📍</span><span id="btnStartTxt">เช็กตำแหน่ง</span></button>
     <div class="stmsg" id="stMsg"></div>
     <button class="btn" id="btnReload" type="button" style="display:none">โหลดข้อมูลใหม่</button>
+    <button class="btn sm" id="btnLogout2" type="button" style="margin-top:16px">ออกจากระบบ</button>
     <div class="stalt" id="stAlt">
       <button class="btn pri" id="btnUseAnyway" type="button" style="display:none">ใช้ตำแหน่งนี้ต่อ</button>
       <button class="btn" id="btnRetry" type="button">ลองอีกครั้ง</button>
@@ -214,6 +235,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
   <div class="mast">
     <div class="mrow"><h1>ร้านรอบตัว · SMP</h1>
       <div style="display:flex;gap:6px;align-items:center"><span class="proto" id="homeNote"></span>
+            <button class="iconbtn" id="btnLogout" type="button" title="ออกจากระบบ">ออก</button>
             <button class="iconbtn" id="btnLocate" title="หาตำแหน่งใหม่">⌖</button></div></div>
     <div class="htabs" id="homeTabs"><button data-t="near" class="on" type="button">ร้านรอบตัว</button><button data-t="pend" type="button">รอกรอก <b id="pendN">0</b></button></div>
     <div class="focus" id="focus">กำลังหาตำแหน่ง…</div>
@@ -257,7 +279,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
     <h2>เช็กอิน</h2>
     <div class="card" id="storeCard"></div>
     <div class="card" data-req="filler"><label class="q req" for="filler">ชื่อผู้กรอก</label>
-      <input type="text" id="filler" list="fillerList" autocomplete="off" placeholder="พิมพ์หรือเลือกชื่อ"><datalist id="fillerList"></datalist>
+      <input type="text" id="filler" autocomplete="off" placeholder="พิมพ์หรือเลือกชื่อ">
       <div class="err">กรุณาใส่ชื่อผู้กรอก</div></div>
     <div class="card" data-req="gps"><label class="q req">พิกัด</label>
       <div class="status" id="gpsStatus" style="margin-top:0"></div>
@@ -293,7 +315,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
   <!-- new store registration -->
   <div class="page" data-p="reg">
     <h2>ลงทะเบียนร้านใหม่</h2>
-    <div class="card" data-req="filler2"><label class="q req" for="filler2">ชื่อผู้กรอก</label><input type="text" id="filler2" list="fillerList" autocomplete="off"><div class="err">กรุณาใส่ชื่อผู้กรอก</div></div>
+    <div class="card" data-req="filler2"><label class="q req" for="filler2">ชื่อผู้กรอก</label><input type="text" id="filler2" autocomplete="off" placeholder="พิมพ์หรือเลือกชื่อ"><div class="err">กรุณาใส่ชื่อผู้กรอก</div></div>
     <div class="card" data-req="nb_name"><label class="q req" for="nb_name">ชื่อร้าน</label><input type="text" id="nb_name"><div class="err">กรุณาใส่ชื่อร้าน</div></div>
     <div class="card" data-req="nb_owner"><label class="q req" for="nb_owner">ชื่อเจ้าของร้าน (ชื่อ-นามสกุล)</label><input type="text" id="nb_owner"><div class="err">กรุณาใส่ชื่อเจ้าของร้าน</div></div>
     <div class="card" data-req="nb_phone"><label class="q req" for="nb_phone">เบอร์โทรร้าน</label><input type="tel" id="nb_phone" inputmode="tel"><div class="err">กรุณาใส่เบอร์โทร</div></div>
@@ -348,11 +370,19 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
   <div class="fnav"><button class="btn" id="btnLaterBack" type="button">← รอกรอก</button><button class="btn pri" id="btnLaterSave" type="button">บันทึก</button></div>
 </section>
 
+<div class="modal" id="tpModal"><div class="sheet tpsheet">
+  <div class="tphead"><b id="tpTitle">เวลา</b><span class="tpval" id="tpVal">--:--</span></div>
+  <div class="tplab">ชั่วโมง</div><div class="tpgrid" id="tpH"></div>
+  <div class="tplab">นาที</div><div class="tpgrid m" id="tpM"></div>
+  <div class="tpnav"><button class="btn" id="tpClear" type="button">ล้าง</button><button class="btn pri" id="tpOk" type="button">ตกลง</button></div>
+</div></div>
+
 <div class="modal" id="modal"><div class="sheet">
   <div class="okmark">✓</div><h2 id="mTitle" style="text-align:center;margin:6px 0 4px">ส่งแล้ว</h2><div id="mBody" class="mbody"></div>
   <details class="mdev" id="mDev"><summary>ดูข้อมูลที่จะส่ง (สำหรับตรวจระบบ)</summary>
     <p class="small">ข้อมูลชุดนี้เข้า Google Sheet "RTR_SMP_Data" และรูปเก็บใน Google Drive</p>
     <pre id="payload"></pre><button class="btn sm" id="btnDl" type="button" style="margin-top:8px">ดาวน์โหลด JSON</button></details>
+  <button class="btn pri" id="btnPart2" type="button" style="width:100%;margin-top:14px;display:none">กรอกส่วนที่ 2 ต่อเลย</button>
   <button class="btn pri" id="btnHome" type="button" style="width:100%;margin-top:14px">กลับหน้าร้านรอบตัว</button>
 </div></div>
 
@@ -377,7 +407,12 @@ const curTheme=()=>"light"; // light theme only (red-white)
 function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
 
 /* ---------- next action per store ---------- */
-const PROV_Q=[31298,30585,28655], PROV_QP=Math.round((PROV_Q[2]/PROV_Q[1]-1)*1000)/10;
+const QOF={"ม.ค.":1,"ก.พ.":1,"มี.ค.":1,"เม.ย.":2,"พ.ค.":2,"มิ.ย.":2,"ก.ค.":3,"ส.ค.":3,"ก.ย.":3,"ต.ค.":4,"พ.ย.":4,"ธ.ค.":4};
+let QG=[], PROV_QP=null; // quarter groups inside the 8-month window + province change (last vs previous quarter, monthly average)
+function calcQuarters(){ QG=[]; MONTHS.forEach((m,i)=>{ const q=QOF[m]||0, g=QG[QG.length-1]; if(g&&g.q===q&&g.ix[g.ix.length-1]===i-1) g.ix.push(i); else QG.push({q,ix:[i]}); });
+  QG=QG.slice(-3); const tot=MONTHS.map((_,i)=>STORES.reduce((a,s)=>a+(s.ga[i]||0),0)), av=g=>g.ix.reduce((a,i)=>a+tot[i],0)/g.ix.length, n=QG.length;
+  PROV_QP=n>=2&&av(QG[n-2])>0?Math.round((av(QG[n-1])/av(QG[n-2])-1)*1000)/10:null; }
+const qLab=g=>g.q?"Q"+g.q:MONTHS[g.ix[0]], qPart=g=>g.ix.length<3?`${qLab(g)} มีแค่ ${MONTHS[g.ix[0]]}${g.ix.length>1?"–"+MONTHS[g.ix[g.ix.length-1]]:""}`:null;
 const MONTHS=[]; let LASTM=""; // last 8 GA months from the sheet
 const GO={"A":0,"B":1,"C":2,"ไม่มียอด":3};
 function analyse(s){
@@ -394,14 +429,15 @@ function analyse(s){
   else {act="ยอดต่ำ — แนะนำโปร / ถามอุปสรรค";pr=3;}
   const extra=[];
   if(s.f.includes("nogps"))extra.push("เก็บ GPS"); if(s.f.includes("outside"))extra.push("พิกัดผิด — เก็บ GPS ใหม่");
-  const qa=(a,b)=>{let t=0;for(let k=a;k<=b;k++)t+=s.ga[k]||0;return t/(b-a+1);}, r1=x=>Math.round(x*10)/10;
-  const q=[qa(0,1),qa(2,4),qa(5,7)]; let bench;
+  const r1=x=>Math.round(x*10)/10;
+  const q=QG.map(g=>g.ix.reduce((a,k)=>a+(s.ga[k]||0),0)/g.ix.length), qn=q.length; let bench;
   if(!q.some(x=>x>0)) bench=`ไม่มียอด ${MONTHS[0]}–${LASTM}`;
-  else { const p=q[1]>0?Math.round((q[2]/q[1]-1)*1000)/10:null;
-    bench=`GA เฉลี่ยต่อเดือน  Q1 ${fmt(r1(q[0]))} · Q2 ${fmt(r1(q[1]))} · Q3 ${fmt(r1(q[2]))}\n`+(p!=null?`Q3 เทียบ Q2 ${p>=0?"+":""}${p}%`:"Q2 ไม่มียอด")+` · ทั้งจังหวัด ${PROV_QP}% · Q1 มีแค่ ก.พ.–มี.ค.`; }
+  else { const p=qn>=2&&q[qn-2]>0?Math.round((q[qn-1]/q[qn-2]-1)*1000)/10:null, L=QG.map(qLab);
+    const tail=[qn>=2?(p!=null?`${L[qn-1]} เทียบ ${L[qn-2]} ${p>=0?"+":""}${p}%`:`${L[qn-2]} ไม่มียอด`):null, PROV_QP!=null?`ทั้งจังหวัด ${PROV_QP>=0?"+":""}${PROV_QP}%`:null, ...QG.map(qPart)].filter(Boolean);
+    bench=`GA เฉลี่ยต่อเดือน  `+QG.map((g,k)=>`${L[k]} ${fmt(r1(q[k]))}`).join(" · ")+"\n"+tail.join(" · "); }
   return {act,pr,extra,bench};
 }
-function prepStores(){ STORES.forEach(s=>{Object.assign(s,analyse(s)); s.cat = s.s==="inactive"?"S":(s.g9==="ไม่มียอด"?"N":s.g9); s._k=(s.n+"|"+s.id+"|"+s.c).toLowerCase().replace(/\s+/g,"");}); }
+function prepStores(){ calcQuarters(); STORES.forEach(s=>{Object.assign(s,analyse(s)); s.cat = s.s==="inactive"?"S":(s.g9==="ไม่มียอด"?"N":s.g9); s._k=(s.n+"|"+s.id+"|"+s.c).toLowerCase().replace(/\s+/g,"");}); }
 
 /* ---------- map ---------- */
 const CATS=[["A","เกรด A","--gA"],["B","เกรด B","--gB"],["C","เกรด C","--gC"],["N","ไม่มียอด","--gN"],["S","inactive","--gS"]];
@@ -464,9 +500,9 @@ function setFocus(id,scroll){
 
 /* legend toggles */
 function buildLegend(){ $("#legend").innerHTML=""; CATS[3][1]=LASTM+" ไม่มียอด";
-CATS.forEach(([k,lab,v])=>{const cb=el("input",{type:"checkbox"});cb.checked=show[k];cb.checked=true;cb.addEventListener("change",()=>{show[k]=cb.checked;refreshMarkers();renderList();});
+CATS.forEach(([k,lab,v])=>{const cb=el("input",{type:"checkbox"});cb.checked=show[k];cb.addEventListener("change",()=>{show[k]=cb.checked;refreshMarkers();renderList();});
   $("#legend").append(el("label",{},cb,el("span",{class:"dot"+(k==="S"?" x":""),style:`background:var(${v});color:${k==="C"?"#1c1a17":(k==="S"?"var(--ink2)":"#fff")}`,text:k==="S"?"":LETTER[k]}),lab));});
-(()=>{const cb=el("input",{type:"checkbox"});cb.addEventListener("change",()=>{showRef=cb.checked;if(!map)return;if(showRef)refLayer.addTo(map);else map.removeLayer(refLayer);});
+(()=>{const cb=el("input",{type:"checkbox"});cb.checked=showRef;cb.addEventListener("change",()=>{showRef=cb.checked;if(!map)return;if(showRef)refLayer.addTo(map);else map.removeLayer(refLayer);});
   $("#legend").append(el("label",{},cb,"ชื่อถนน"));})(); }
 
 /* ---------- location ---------- */
@@ -557,7 +593,29 @@ $("#hsearch").addEventListener("input",()=>{
 
 /* ======================= VISIT FORM ======================= */
 const V={}; let S=null, cur=null;
-RSR.forEach(n=>$("#fillerList").append(el("option",{value:n})));
+function combo(inp,opts){ // input + own drop-down list in the app style; free text still allowed
+  const w=el("div",{class:"cbx"}); inp.parentNode.insertBefore(w,inp); w.append(inp);
+  const x=el("button",{type:"button",class:"cbx-x",title:"ล้างชื่อ",text:"×"}), pan=el("div",{class:"cbx-pan",role:"listbox"}); w.append(x,pan);
+  let hi=-1, items=[], quiet=false;
+  const norm=t=>t.replace(/^คุณ/,"").replace(/\s+/g,"").toLowerCase(), sync=()=>w.classList.toggle("has",!!inp.value);
+  const close=()=>{ w.classList.remove("open"); hi=-1; };
+  function pick(v){ inp.value=v; sync(); close(); quiet=true; inp.dispatchEvent(new Event("input",{bubbles:true})); inp.dispatchEvent(new Event("change",{bubbles:true})); quiet=false; }
+  function row(txt,cls,v){ const b=el("div",{class:"cbx-o"+cls,role:"option"},el("span",{text:txt}),el("span",{class:"cbx-ck",text:cls.includes(" on")?"✓":""}));
+    b.addEventListener("pointerdown",e=>{ e.preventDefault(); pick(v); }); pan.append(b); }
+  function render(){ const q=norm(inp.value.trim()), t=inp.value.trim(); pan.innerHTML="";
+    items=opts.filter(o=>!q||norm(o).includes(q)); items.forEach((o,i)=>row(o,(o===inp.value?" on":"")+(i===hi?" hi":""),o));
+    if(t&&!opts.includes(t)){ row(`ใช้ชื่อ “${t}”`," cbx-new"+(hi===items.length?" hi":""),t); items=items.concat([t]); }
+    if(!pan.children.length) pan.append(el("div",{class:"cbx-empty",text:"ไม่พบชื่อ — พิมพ์ชื่อเต็มได้เลย"})); }
+  const open=()=>{ hi=-1; render(); w.classList.add("open"); const r=pan.getBoundingClientRect(), lim=window.innerHeight-84; if(r.bottom>lim) window.scrollBy(0,r.bottom-lim); };
+  inp.addEventListener("focus",open); inp.addEventListener("click",()=>{ if(!w.classList.contains("open")) open(); });
+  inp.addEventListener("input",()=>{ sync(); if(quiet) return; hi=-1; render(); w.classList.add("open"); });
+  inp.addEventListener("blur",()=>setTimeout(close,150));
+  inp.addEventListener("keydown",e=>{ if(!w.classList.contains("open")) return;
+    if(e.key==="ArrowDown"||e.key==="ArrowUp"){ e.preventDefault(); hi=Math.max(0,Math.min(items.length-1,hi+(e.key==="ArrowDown"?1:-1))); render(); }
+    else if(e.key==="Enter"&&hi>=0&&items[hi]!=null){ e.preventDefault(); pick(items[hi]); } else if(e.key==="Escape") close(); });
+  x.addEventListener("pointerdown",e=>{ e.preventDefault(); inp.value=""; sync(); inp.dispatchEvent(new Event("change",{bubbles:true})); inp.focus(); open(); });
+  inp._sync=sync; sync(); }
+combo($("#filler"),RSR); combo($("#filler2"),RSR);
 /* problem list: one row per problem, details open under the row when ticked */
 const PROB_ALL=[]; PROB_GROUPS.forEach(([g,list])=>list.forEach(p=>PROB_ALL.push({g,p})));
 (function buildProbs(){ const box=$("#probList");
@@ -586,7 +644,7 @@ function resetForm(){
   ["recruitWrap","bestWrap","cm_AIS","cm_OTH","checksWrap"].forEach(i=>$("#"+i).style.display="none");
   $$("#probList .pmore,#probList [id^=pe_]").forEach(x=>x.style.display="none");
   $("#campCard").open=false; $("#probPhWrap").style.display="none"; $("#thumbProb").innerHTML="";
-  const f=load("rtrFiller")||""; $("#filler").value=f; $("#filler2").value=f;
+  ["filler","filler2"].forEach(i=>{ const x=$("#"+i); x.value=FILLER; if(x._sync) x._sync(); });
 }
 function startVisit(s){
   resetForm(); S={store:s,isNew:false,gps:here?{...here}:null,timeIn:new Date().toISOString(),photos:{},files:{},vid:newVid()};
@@ -625,7 +683,7 @@ function probPhotos(){ const box=$("#thumbProb"); box.innerHTML=""; (S.probPh||[
 $("#photoProb").addEventListener("change",e=>{ S.probPh=S.probPh||[]; [...e.target.files].slice(0,3-S.probPh.length).forEach(f=>S.probPh.push({name:f.name,size:f.size,url:URL.createObjectURL(f),file:f})); e.target.value=""; probPhotos(); });
 function photo(inp,th,key){$("#"+inp).addEventListener("change",e=>{const f=e.target.files[0];if(!f)return;S.photos[key]={name:f.name,size:f.size};S.files[key]=f;const im=$("#"+th);im.src=URL.createObjectURL(f);im.style.display="block";clearBad(inp);});}
 photo("photoFront","thumbFront","front");photo("photoFront2","thumbFront2","front");photo("photoCamp","thumbCamp","campaign");
-["filler","filler2"].forEach(i=>$("#"+i).addEventListener("change",()=>store("rtrFiller",val(i))));
+["filler","filler2"].forEach(i=>$("#"+i).addEventListener("change",()=>{ FILLER=val(i); }));
 
 const notSell=()=>S&&S.isNew&&radio("sells")==="ยังไม่ขาย";
 const probIdx=()=>checks("prob").map(Number);
@@ -665,9 +723,7 @@ const PF_LATER=[
  {sec:"ประเมินผู้ขาย",qs:[
   Q("traffic","Traffic ลูกค้า",["สูง","ปานกลาง","ต่ำ"]),
   Q("know","ความรู้เกี่ยวกับโปร true",["ดี","พอใช้","ไม่รู้"]),
-  Q("pitch","การแนะนำซิม true",["แนะนำเป็นหลัก","แนะนำเมื่อถูกถาม","ไม่แนะนำ"]),
-  Q("attitude","ทัศนคติต่อการขาย true",["สนับสนุน","เป็นกลาง","ไม่สนใจ"]),
-  Q("uptier","ศักยภาพ Uptier",["สูง","ปานกลาง","ต่ำ"])]}];
+  Q("pitch","การแนะนำซิม true",["แนะนำเป็นหลัก","แนะนำเมื่อถูกถาม","ไม่แนะนำ"])]}];
 const PQ_LATER=PF_LATER.flatMap(s=>s.qs), PQ=[PF_NEED,...PQ_LATER];
 const N_LATER=PQ_LATER.filter(q=>!q.dep).length, N_PHOTO=PQ_LATER.filter(q=>q.ph&&!q.dep).length, DEP_TXT=PQ_LATER.filter(q=>q.dep).map(q=>q.q).join(", ");
 const PKEY="rtrProfiles", PENDKEY="rtrPending", REVIEW_DAYS=90, HB_MAXM=1000, NEAR_M=300;
@@ -733,7 +789,7 @@ function shrink(file,cb){ const img=new Image(), u=URL.createObjectURL(file); im
 (function buildProfileBlock(){
   const b=el("div",{id:"profBlock",style:"display:none"},el("h3",{class:"sec",text:"โปรไฟล์ร้าน — ถามที่ร้าน"}));
   const hrs=el("div",{class:"card"},el("label",{class:"q",text:"วันเวลาเปิด–ปิดร้าน"}),
-    el("div",{class:"two"},el("div",{},el("label",{class:"q sm",for:"pf_open",text:"เปิด"}),el("input",{type:"time",id:"pf_open"})),el("div",{},el("label",{class:"q sm",for:"pf_close",text:"ปิด"}),el("input",{type:"time",id:"pf_close"}))),
+    el("div",{class:"two"},el("div",{},el("label",{class:"q sm",for:"pf_open",text:"เปิด"}),el("input",{type:"text",id:"pf_open",class:"tp",readonly:"",placeholder:"เลือกเวลา"})),el("div",{},el("label",{class:"q sm",for:"pf_close",text:"ปิด"}),el("input",{type:"text",id:"pf_close",class:"tp",readonly:"",placeholder:"เลือกเวลา"}))),
     el("label",{class:"q sm",style:"margin-top:10px",text:"ปิดวันไหน"}));
   const od=el("div",{class:"opts days"}); DAYS.forEach(d=>od.append(el("label",{},el("input",{type:"checkbox",name:"pf_off",value:d}),d))); od.append(el("label",{},el("input",{type:"checkbox",name:"pf_off",value:NO_OFF}),NO_OFF));
   hrs.append(od);
@@ -787,8 +843,8 @@ function savePending(vid){ // after submit: queue the later part
   const key=S.isNew?("NEW:"+val("nb_name")+":"+Date.now()):S.store.id, all=pendings(), A=areaInfo(S.store,S.gps);
   const item={key,vid,sid:S.store?S.store.id:null,name:S.store?S.store.n:val("nb_name"),visitAt:S.timeIn,store:pfAnswers(),
     prev:S.prof.prev?S.prof.prev.a:null,photos:{...S.pfPhotos},area:{nn:A.nn,hb:A.hb?A.hb.v:null}};
-  all[key]=item; if(setJ(PENDKEY,all)) return true;
-  item.photos={}; item.photosDropped=true; all[key]=item; return setJ(PENDKEY,all); }
+  all[key]=item; if(setJ(PENDKEY,all)) return key;
+  item.photos={}; item.photosDropped=true; all[key]=item; return setJ(PENDKEY,all)?key:null; }
 
 /* ---------- pending tab + later view ---------- */
 let homeTab="near";
@@ -815,15 +871,16 @@ function openLater(key){ LP=pendings()[key]; if(!LP) return; const w=$("#laterBo
   if(LP.prev) qFill(PQ_LATER,"pl_",LP.prev); showView("later"); }
 function saveLater(){ if(!qValidate(PQ_LATER,"pl_")){ const b=document.querySelector("#later .card.bad"); if(b) b.scrollIntoView({behavior:"smooth",block:"center"}); return; }
   const full={...LP.store,...qAnswers(PQ_LATER,"pl_")}, done=new Date().toISOString();
-  const prof=profiles(); if(LP.sid) { prof[LP.sid]={at:LP.visitAt,a:full}; setJ(PKEY,prof); }
+  if(LP.sid){ const l=getJ(PKEY); l[LP.sid]={at:LP.visitAt,a:full}; setJ(PKEY,l); } // only this phone's own entry (server profiles are not copied to the phone)
   const all=pendings(); delete all[LP.key]; setJ(PENDKEY,all);
   const out={type:"profile_complete",store_id:LP.sid,store_name:LP.name,visit_at:LP.visitAt,completed_at:done,review:LP.prev?"ทวน":"ครั้งแรก",answers:full,
     shown:{nano_cluster:LP.area&&LP.area.nn?LP.area.nn.id:null,true_share_nn:LP.area&&LP.area.nn?LP.area.nn.v:null,true_share_hb:LP.area?LP.area.hb:null}};
   out.visit_id=LP.vid||null; const name=LP.name; LP=null; pendCount(); const btn=$("#btnLaterSave"); btn.disabled=true;
   let st="sent"; api({action:"profile",profile:out}).then(r=>{ if(!r.ok) throw new Error(r.error); }).catch(()=>{ st=queue({body:{action:"profile",profile:out},at:done}); })
     .finally(()=>{ btn.disabled=false; showDone(st==="sent"?"บันทึกโปรไฟล์แล้ว":"บันทึกไว้ในเครื่อง",[name,st==="sent"?"ส่งเข้าระบบแล้ว "+fmtDT(new Date()):"ยังส่งไม่ได้ — ระบบจะส่งให้อัตโนมัติเมื่อมีสัญญาณ"],out,st==="sent"); }); }
-function showDone(title,lines,data,ok=true){ $("#mTitle").textContent=title; const m=$(".okmark"); m.textContent=ok?"✓":"!"; m.classList.toggle("wait",!ok); const b=$("#mBody"); b.innerHTML=""; lines.filter(Boolean).forEach((t,i)=>b.append(el("div",{class:i?"small":"mname",text:t})));
-  $("#payload").textContent=JSON.stringify(data,null,2); $("#mDev").open=false; $("#modal").classList.add("on"); }
+function showDone(title,lines,data,ok=true,next=null){ $("#mTitle").textContent=title; const m=$(".okmark"); m.textContent=ok?"✓":"!"; m.classList.toggle("wait",!ok); const b=$("#mBody"); b.innerHTML=""; lines.filter(Boolean).forEach((t,i)=>b.append(el("div",{class:i?"small":"mname",text:t})));
+  $("#payload").textContent=JSON.stringify(data,null,2); $("#mDev").open=false; const nb=$("#btnPart2"), hb=$("#btnHome"); nb.style.display=next?"block":"none"; nb.dataset.k=next||"";
+  hb.className=next?"btn":"btn pri"; hb.textContent=next?"ไว้กรอกทีหลัง (อยู่ในแท็บรอกรอก)":"กลับหน้าร้านรอบตัว"; $("#modal").classList.add("on"); }
 
 pendCount();
 
@@ -832,7 +889,7 @@ $("#homeTabs").addEventListener("click",e=>{const b=e.target.closest("button"); 
 $("#btnLaterSave").addEventListener("click",saveLater);
 /* ---------- path engine ---------- */
 function needs(){ if(S.isNew||!S.store) return {}; const f=S.store.f; return {gps:f.includes("nogps")||f.includes("outside"),dup:f.includes("dup"),nw:f.includes("new")}; }
-function path(){
+function path(){ if(!S) return ["checkin","found","sum"];
   return S.isNew?(notSell()?["reg","sum"]:["reg","found","sum"]):["checkin","found","sum"];
 }
 function progress(){ const p=path(), i=Math.max(0,p.indexOf(cur)); $("#steps").textContent=`หน้า ${i+1} จาก ${p.length}`; $("#barfill").style.width=((i+1)/p.length*100)+"%";
@@ -906,25 +963,43 @@ function renderSummary(){
   if(P.problems) sec("ปัญหาที่พบ",[].concat(P.no_problem?[["ผล","ไม่พบปัญหา"]]:[["รูปประกอบ",(P.photos.problems||[]).length+" รูป"]].concat(P.problems.map(x=>[x.problem,[x.result?x.result+(x.result==="ต้องส่งต่อ"&&(x.escalate_to||x.urgency)?` → ${x.escalate_to||"–"}${x.urgency?` (${x.urgency})`:""}`:""):null,x.detail,x.reorder_qty!=null?`สั่งเพิ่ม ${x.reorder_qty} ซิม`:null].filter(Boolean).join(" · ")]))));
   if(P.competitors){ const c=P.competitors, f=o=>[o.sims_per_month!=null?`${o.sims_per_month.toLocaleString()} ซิม/เดือน`:null,o.typical_pack_baht!=null?`แพ็ก ${o.typical_pack_baht.toLocaleString()} บาท`:null].filter(Boolean).join(" · ")||"ไม่ได้ระบุตัวเลข";
     sec("คู่แข่ง",[["ค่ายที่ขาย",c.carriers.map(x=>x==="ไม่มี"?(notSell()?"ไม่ได้ขายซิม":"ไม่ขายค่ายอื่น"):x).join(", ")],["AIS",c.ais?f(c.ais):undefined],["ค่ายอื่น",c.other?((c.other.name?c.other.name+" · ":"")+f(c.other)):undefined],["ขายดีสุด",c.best_seller??undefined]]); }
-  if(P.profile){ const a=P.profile.answers; sec("โปรไฟล์ร้าน — ถามที่ร้าน ("+P.profile.review+")",[["เวลาเปิด–ปิด",hoursTxt(a)],["ปิดวัน",(a.off||[]).join(" ")],[PF_NEED.q,ansTxt(a,"need")],["อุปกรณ์ลงทะเบียน",devTxt(a)],["รูปที่ถ่าย",P.profile.photos.filter(k=>k!=="front").length+"/"+PF_SHOOT.length],["ส่วนที่ 2",`${N_LATER} ข้อ ไปอยู่ในแท็บรอกรอก หลังกดส่ง`]]); }
+  if(P.profile){ const a=P.profile.answers; sec("โปรไฟล์ร้าน — ถามที่ร้าน ("+P.profile.review+")",[["เวลาเปิด–ปิด",hoursTxt(a)],["ปิดวัน",(a.off||[]).join(" ")],[PF_NEED.q,ansTxt(a,"need")],["อุปกรณ์ลงทะเบียน",devTxt(a)],["รูปที่ถ่าย",P.profile.photos.filter(k=>k!=="front").length+"/"+PF_SHOOT.length],["ส่วนที่ 2",`${N_LATER} ข้อ — กรอกต่อได้ทันทีหลังกดส่ง หรือเก็บไว้ในแท็บรอกรอก`]]); }
   if(P.campaign) sec("แคมเปญ",[["แคมเปญ",P.campaign.name],["สื่อที่ร้าน",P.campaign.materials],["ร้านเข้าใจ",P.campaign.store_understands],["ลูกค้าตอบรับ",P.campaign.customer_response],["ความเห็น",P.campaign.feedback]]);
 }
 async function submit(){ const btn=$("#btnNext"); if(btn.dataset.busy) return; btn.dataset.busy="1"; btn.disabled=true; btn.textContent="กำลังส่ง…";
-  const P=payload(); if(P.profile) savePending(P.visit_id);
+  const P=payload(); const pk=P.profile?savePending(P.visit_id):null;
   let photos=[]; try{ photos=await collectPhotos(P); }catch(e){}
   let st="sent"; try{ const r=await api({action:"visit",visit:P,photos}); if(!r.ok) throw new Error(r.error||"error"); }catch(e){ st=queue({body:{action:"visit",visit:P,photos},at:P.time_out}); }
   delete btn.dataset.busy; btn.disabled=false; progress(); pendCount(); outCount();
   showDone(st==="sent"?"ส่งแล้ว":"บันทึกไว้ในเครื่อง",[P.store_name+(P.store_id?` (${P.store_id})`:""),
     st==="sent"?"ส่งเข้าระบบแล้ว "+fmtDT(new Date()):"ยังส่งไม่ได้ — เก็บไว้ในเครื่อง ระบบจะส่งให้อัตโนมัติเมื่อมีสัญญาณ"+(st==="nophotos"?" (รูปเก็บไม่ได้ เพราะพื้นที่เครื่องเต็ม)":""),
-    P.profile?`โปรไฟล์ส่วนที่ 2 (${N_LATER} ข้อ) ไปอยู่ในแท็บรอกรอก`:null],P,st==="sent"); }
+    P.profile?(pk?`โปรไฟล์ส่วนที่ 2 (${N_LATER} ข้อ) — กรอกต่อเลย หรือเก็บไว้ในแท็บรอกรอก`:"เก็บโปรไฟล์ส่วนที่ 2 ไว้ในเครื่องไม่ได้ (พื้นที่เครื่องเต็ม)"):null],P,st==="sent",pk); }
 $("#btnDl").addEventListener("click",()=>{const b=new Blob([$("#payload").textContent],{type:"application/json"});const a=el("a",{href:URL.createObjectURL(b),download:"rtr_visit_"+Date.now()+".json"});document.body.append(a);a.click();a.remove();});
+$("#btnPart2").addEventListener("click",()=>{ const k=$("#btnPart2").dataset.k; $("#modal").classList.remove("on"); pendCount(); if(k&&pendings()[k]) openLater(k); else showView("home"); });
 $("#btnHome").addEventListener("click",()=>{$("#modal").classList.remove("on");showView("home"); pendCount(); if(homeTab==="pend") renderPending();});
+
+/* ---------- time picker (open / close hours) ---------- */
+let TP=null; const p2=n=>String(n).padStart(2,"0");
+function tpRender(){ const H=$("#tpH"), M=$("#tpM"); H.innerHTML=""; M.innerHTML="";
+  for(let h=0;h<24;h++){ const b=el("button",{type:"button",class:"tpc"+(TP.h===h?" on":""),text:p2(h)}); b.addEventListener("click",()=>{ TP.h=h; if(TP.m==null) TP.m=0; tpRender(); }); H.append(b); }
+  const ms=[0,15,30,45]; if(TP.m!=null&&!ms.includes(TP.m)){ ms.push(TP.m); ms.sort((a,b)=>a-b); }
+  ms.forEach(m=>{ const b=el("button",{type:"button",class:"tpc"+(TP.m===m?" on":""),text:p2(m)}); b.addEventListener("click",()=>{ TP.m=m; tpRender(); }); M.append(b); });
+  $("#tpVal").textContent=TP.h==null?"--:--":p2(TP.h)+":"+p2(TP.m||0); $("#tpOk").disabled=TP.h==null; }
+function tpOpen(inp,title){ const v=/^(\d{1,2}):(\d{2})/.exec(inp.value||""); TP={inp,h:v?+v[1]:null,m:v?+v[2]:null}; $("#tpTitle").textContent=title; tpRender(); $("#tpModal").classList.add("on"); }
+function tpClose(){ $("#tpModal").classList.remove("on"); TP=null; }
+function tpSet(v){ const i=TP.inp; i.value=v; tpClose(); i.dispatchEvent(new Event("input",{bubbles:true})); i.dispatchEvent(new Event("change",{bubbles:true})); }
+$("#tpOk").addEventListener("click",()=>{ if(TP&&TP.h!=null) tpSet(p2(TP.h)+":"+p2(TP.m||0)); });
+$("#tpClear").addEventListener("click",()=>{ if(TP) tpSet(""); });
+$("#tpModal").addEventListener("click",e=>{ if(e.target.id==="tpModal") tpClose(); });
+[["pf_open","เวลาเปิดร้าน"],["pf_close","เวลาปิดร้าน"]].forEach(([id,t])=>{ const i=$("#"+id); i.addEventListener("click",()=>tpOpen(i,t));
+  i.addEventListener("keydown",e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); tpOpen(i,t); } }); });
 
 /* ---------- server: Google Sheet "RTR_SMP_Data" via Apps Script ---------- */
 const API="https://script.google.com/macros/s/AKfycbysDARyiBpYsW6Yp1m7xrIEMn5x2uMsMC80Alwy33porWmMCsIhqvWTL1gV5rbhqkwwfw/exec";
-const PINKEY="rtrPin", DATAKEY="rtrData", OUTKEY="rtrOutbox";
+const OUTKEY="rtrOutbox"; var PIN="", FILLER=""; // PIN + filler name live only while the app is open
+try{ ["rtrPin","rtrData","rtrFiller"].forEach(k=>localStorage.removeItem(k)); }catch(e){} // older versions kept these on the phone
 async function api(body){ if(!API) throw new Error("no api");
-  const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...body,pin:load(PINKEY)||""})});
+  const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...body,pin:PIN})});
   if(!r.ok) throw new Error("http "+r.status); return r.json(); }
 const newVid=()=>"V"+Date.now()+"-"+Math.random().toString(36).slice(2,6);
 const gName=v=>v==null?"ไม่มียอด":(v>75?"A":(v>=30?"B":"C"));
@@ -946,7 +1021,7 @@ function queue(item){ const a=outbox(); a.push(item); if(setOutbox(a)){ outCount
 function outCount(){ const n=outbox().length; $("#outCard").style.display=n?"block":"none"; $("#outTxt").textContent=`ค้างส่งเข้าระบบ ${n} รายการ — ส่งให้อัตโนมัติเมื่อมีสัญญาณ`;
   $("#pendN").textContent=Object.keys(pendings()).length+n; $("#pendN").style.display=(Object.keys(pendings()).length+n)?"inline-flex":"none"; }
 let flushing=false;
-async function flushOutbox(){ if(flushing||!API) return; flushing=true; const b=$("#btnFlush"); b.disabled=true;
+async function flushOutbox(){ if(flushing||!API||!PIN) return; flushing=true; const b=$("#btnFlush"); b.disabled=true;
   try{ let a=outbox(); while(a.length){ const r=await api(a[0].body); if(!r.ok) break; a.shift(); setOutbox(a); } }catch(e){}
   flushing=false; b.disabled=false; outCount(); }
 window.addEventListener("online",flushOutbox);
@@ -964,18 +1039,23 @@ function initData(d){
 function setReady(ok,msg,retry){ $("#dataNote").textContent=msg; $("#homeNote").textContent=ok?msg.replace(/^ข้อมูลยอดขาย /,""):""; $("#btnStart").disabled=!ok;
   $("#btnReload").style.display=retry?"inline-block":"none"; }
 function gate(msg){ $("#pinMsg").className="stmsg bad-t"; $("#pinMsg").textContent=msg||""; $("#pinIn").value=""; showView("gate"); }
-async function boot(){
-  let cached=null; try{ cached=JSON.parse(load(DATAKEY)||"null"); }catch(e){}
-  if(!load(PINKEY)){ gate(""); return; }
-  showView("start"); setReady(false,"กำลังโหลดข้อมูลร้าน…");
-  try{ const d=await api({action:"data"});
-    if(!d.ok){ if(d.error==="bad_pin"){ store(PINKEY,""); gate("รหัสไม่ถูกต้อง หรือรหัสถูกเปลี่ยนแล้ว"); return; } throw new Error(d.error); }
-    d._at=new Date().toISOString(); try{ localStorage.setItem(DATAKEY,JSON.stringify(d)); }catch(e){}
-    initData(d); setReady(true,"ข้อมูลยอดขาย ณ "+(d.asof||"–")); flushOutbox(); }
-  catch(err){ if(cached&&cached.stores){ initData(cached); setReady(true,"ออฟไลน์ — ใช้ข้อมูลที่โหลดไว้ "+fmtDT(cached._at),true); }
-    else setReady(false,"โหลดข้อมูลไม่ได้ — ตรวจสัญญาณอินเทอร์เน็ตแล้วกดโหลดใหม่",true); }
-  outCount(); }
-$("#btnPin").addEventListener("click",()=>{ const v=$("#pinIn").value.trim(); if(!/^\d{6}$/.test(v)){ $("#pinMsg").className="stmsg bad-t"; $("#pinMsg").textContent="ใส่ตัวเลข 6 หลัก"; return; } store(PINKEY,v); boot(); });
+async function boot(){ // the PIN is checked by the server every time (internet needed to get in)
+  if(!PIN){ gate(""); return; }
+  $("#pinMsg").className="stmsg"; $("#pinMsg").textContent="กำลังตรวจรหัส…"; $("#btnPin").disabled=true;
+  try{ const d=await Promise.race([api({action:"data"}),new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),25000))]);
+    if(!d.ok){ PIN=""; gate(d.error==="bad_pin"?"รหัสไม่ถูกต้อง หรือรหัสถูกเปลี่ยนแล้ว":"ระบบขัดข้อง ("+d.error+") — ลองใหม่อีกครั้ง"); return; }
+    initData(d); showView("start"); setReady(true,"ข้อมูลยอดขาย ณ "+(d.asof||"–")); touch(); flushOutbox(); }
+  catch(err){ PIN=""; gate("เชื่อมต่อไม่ได้ — ต้องต่ออินเทอร์เน็ตตอนใส่รหัส แล้วลองใหม่"); }
+  finally{ $("#btnPin").disabled=false; outCount(); } }
+$("#btnPin").addEventListener("click",()=>{ const v=$("#pinIn").value.trim(); if(!/^\d{6}$/.test(v)){ $("#pinMsg").className="stmsg bad-t"; $("#pinMsg").textContent="ใส่ตัวเลข 6 หลัก"; return; } PIN=v; boot(); });
+/* idle 2 h -> clear whatever is half-filled, forget the name, lock (pending part-2 items and the outbox stay) */
+const IDLE_MS=2*36e5; let lastAct=Date.now();
+function idleCheck(){ if(PIN&&Date.now()-lastAct>IDLE_MS){ lockApp("ไม่ได้ใช้งานเกิน 2 ชม. — ล้างแบบฟอร์มที่ค้างไว้แล้ว ใส่รหัสอีกครั้ง"); return true; } return false; }
+function touch(){ if(idleCheck()) return; lastAct=Date.now(); }
+["pointerdown","keydown","input","touchstart"].forEach(t=>document.addEventListener(t,touch,{capture:true,passive:true}));
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) idleCheck(); }); window.addEventListener("focus",idleCheck); setInterval(idleCheck,60000);
+function lockApp(msg){ PIN=""; FILLER=""; LP=null; try{ resetForm(); }catch(e){} S=null; cur=null; tpClose(); $("#modal").classList.remove("on"); gate(msg||""); }
+$("#btnLogout").addEventListener("click",()=>lockApp("ออกจากระบบแล้ว")); $("#btnLogout2").addEventListener("click",()=>lockApp("ออกจากระบบแล้ว"));
 $("#pinIn").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#btnPin").click(); });
 $("#btnReload").addEventListener("click",boot);
 /* ---------- boot ---------- */
