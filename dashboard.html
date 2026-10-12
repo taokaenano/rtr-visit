@@ -563,8 +563,9 @@ const LENSES={
 const lvl=v=>v>52?"#2563c4":(v>=48?"#a8a29e":"#e1251b");
 function buildMap(){ if(typeof L==="undefined"){ $("#legend").textContent="โหลดแผนที่ไม่ได้ — ตรวจอินเทอร์เน็ตแล้วกดโหลดใหม่"; return; }
   if(!map){ map=L.map("map",{zoomControl:false,preferCanvas:true}).setView([13.62,100.65],11); L.control.zoom({position:"bottomright"}).addTo(map); cv=L.canvas({padding:.3});
-    L.tileLayer("https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,attribution:"© OpenStreetMap · © CARTO"}).addTo(map);
-    lblLayer=L.tileLayer("https://{s}.basemaps.cartocdn.com/light_only_labels/{z}/{x}/{y}{r}.png",{subdomains:"abcd",maxZoom:19,pane:"overlayPane"});
+    // same basemap as the field app (Esri light gray canvas + its road/place reference layer)
+    L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",{maxNativeZoom:16,maxZoom:19,attribution:"Esri"}).addTo(map);
+    lblLayer=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Light_Gray_Reference/MapServer/tile/{z}/{y}/{x}",{maxNativeZoom:16,maxZoom:19,pane:"overlayPane"});
     const ls=$("#lens"); Object.entries(LENSES).forEach(([k,v])=>ls.append(el("button",{type:"button","data-l":k,text:v.t,class:k===LENS?"on":"",onclick:()=>{ LENS=k; $$("#lens button").forEach(b=>b.classList.toggle("on",b.dataset.l===k)); if(k==="share"&&!lay.hb){ lay.hb=true; autoHB=true; } else if(k!=="share"&&autoHB){ lay.hb=false; autoHB=false; } drawMap(FS()); }}))); }
   Object.values(MK).forEach(m=>m.remove()); MK={};
   ST.forEach(s=>{ if(!s.okxy) return; const m=L.circleMarker([s.lat,s.lon],{renderer:cv,radius:6,weight:1.5,color:"#ffffff",fillOpacity:.95});
