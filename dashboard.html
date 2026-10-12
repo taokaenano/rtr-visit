@@ -251,7 +251,7 @@ function init(d){
     aisPack:num(r["AIS แพ็ก (บาท)"]), best:str(r["ขายดีสุด"]), camp:str(r["แคมเปญ"]), front:str(r["รูปหน้าร้าน"]), prof:str(r["โปรไฟล์"]), recruit:str(r["ร้านใหม่: ผลการชวน"]),
     sells:str(r["ร้านใหม่: ขายซิม true"]), counter:str(r["รูปเคาน์เตอร์"]), media:str(r["รูปสื่อ true"])})).filter(v=>v.id).sort((a,b)=>(b.at||0)-(a.at||0));
   P=(d.problems||[]).map(r=>({vid:str(r.visit_id), day:toDate(r["วันที่เยี่ยม"]), sid:str(r.STORE_ID), name:str(r["ชื่อร้าน"]), a:str(r["อำเภอ"]), owner:str(r["ผู้ดูแล"]), filler:str(r["ผู้กรอก"]),
-    group:str(r["กลุ่ม"]), prob:str(r["ปัญหา"]), detail:str(r["รายละเอียด"]), result:str(r["ผล"]), to:str(r["ส่งต่อถึง"]), urg:str(r["ความเร่ง"]), status:str(r["สถานะ"]), photo:str(r["รูปประกอบ"])}))
+    group:str(r["กลุ่ม"]), prob:str(r["ปัญหา"]), detail:str(r["รายละเอียด"]), qty:num(r["จำนวนที่ขอสั่ง"]), result:str(r["ผล"]), to:str(r["ส่งต่อถึง"]), urg:str(r["ความเร่ง"]), status:str(r["สถานะ"]), photo:str(r["รูปประกอบ"])}))
     .filter(p=>p.vid||p.prob).map(p=>Object.assign(p,{open:p.status==="รอดำเนินการ"}));
   ST=d.stores.map(x=>{ const s={...x}; s.ga=x.ga.slice(x.ga.length-take); const n=s.ga.length; s.g9=gName(s.ga[n-1]); s.g8=gName(s.ga[n-2]); return s; });
   calcQuarters(); BYID={};
@@ -477,7 +477,7 @@ function rVisits(L,list){
     if(op.length){ L.append(el("h2",{class:"sec",text:"ปัญหาที่ยังค้าง"})); op.sort((a,b)=>(a.day||0)-(b.day||0)).slice(0,30).forEach(p=>{ const s=BYID[p.sid];
       L.append(el("button",{class:"wcard",type:"button",onclick:()=>p.sid&&openStore(p.sid),onmouseenter:()=>p.sid&&hover(p.sid,true),onmouseleave:()=>p.sid&&hover(p.sid,false)},
         el("div",{class:"w1"},el("div",{},el("div",{class:"wname",text:p.name||p.sid}),el("div",{class:"wmeta",text:[p.group,p.a,p.owner||"ไม่มีผู้ดูแล"].filter(Boolean).join(" · ")})),el("span",{class:"chips"},el("span",{text:`ค้าง ${days(p.day)??"–"} วัน`}))),
-        el("div",{class:"why t0",text:p.prob+(p.detail?" — "+p.detail:"")}),el("div",{class:"nx",text:`ตามกับ ${p.to||"ผู้รับเรื่อง"}${p.urg?" · "+p.urg:""} แล้วแก้สถานะในชีต PROBLEMS`}))); }); } }
+        el("div",{class:"why t0",text:p.prob+(p.detail?" — "+p.detail:"")+(p.qty!=null?` (ขอสั่ง ${fmt(p.qty)} ซิม)`:"")}),el("div",{class:"nx",text:`ตามกับ ${p.to||"ผู้รับเรื่อง"}${p.urg?" · "+p.urg:""} แล้วแก้สถานะในชีต PROBLEMS`}))); }); } }
   // competitors
   L.append(el("h2",{class:"sec",text:"คู่แข่ง: ร้านที่บอกว่า AIS ขายได้มากกว่ายอด true"}));
   if(!over.length) L.append(el("div",{class:"empty",text:vs.some(v=>v.ais!=null)?"ไม่มีร้านที่ AIS ขายมากกว่า true":"ยังไม่มีตัวเลขซิม AIS ต่อเดือนจากการเยี่ยม"}));
@@ -525,7 +525,7 @@ function rStore(L,list){
         links.length?el("div",{class:"small"},...links.map(([t,u],i)=>[i?" · ":"",el("a",{class:"lnk",href:u.split("\n")[0],target:"_blank",rel:"noopener",text:t})])):null)); }); L.append(tl); }
   L.append(el("h2",{class:"sec",text:`ปัญหา (${s.probs.length})`}));
   if(!s.probs.length) L.append(el("div",{class:"empty",text:"ไม่มีปัญหาที่รายงาน"}));
-  else s.probs.forEach(p=>L.append(el("div",{class:"card"},el("div",{class:"w1"},B(p.prob),el("span",{class:"chips"},el("span",{text:p.status||"ไม่ระบุ"}))),el("div",{class:"small",text:[fmtD(p.day),p.group,p.detail,p.result,p.to?"ส่งต่อ: "+p.to:null,p.urg].filter(Boolean).join(" · ")}))));
+  else s.probs.forEach(p=>L.append(el("div",{class:"card"},el("div",{class:"w1"},B(p.prob),el("span",{class:"chips"},el("span",{text:p.status||"ไม่ระบุ"}))),el("div",{class:"small",text:[fmtD(p.day),p.group,p.detail,p.qty!=null?`ขอสั่ง ${fmt(p.qty)} ซิม`:null,p.result,p.to?"ส่งต่อ: "+p.to:null,p.urg].filter(Boolean).join(" · ")}))));
   L.append(el("h2",{class:"sec",text:"โปรไฟล์ร้าน"}));
   if(!s.prof) L.append(el("div",{class:"empty",text:"ยังไม่มีโปรไฟล์ที่กรอกครบ"}));
   else { const a=s.prof.a||{}, t=x=>x==null||x===""?null:[].concat(x).join(", ");

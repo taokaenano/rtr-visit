@@ -221,12 +221,11 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
     <p class="sub">เช็กตำแหน่งก่อน แล้วระบบจะแสดงร้านรอบตัวในรัศมี 300 ม.</p>
     <button class="gpsbtn" id="btnStart" type="button"><span class="ico">📍</span><span id="btnStartTxt">เช็กตำแหน่ง</span></button>
     <div class="stmsg" id="stMsg"></div>
-    <button class="btn" id="btnReload" type="button" style="display:none">โหลดข้อมูลใหม่</button>
     <button class="btn sm" id="btnLogout2" type="button" style="margin-top:16px">ออกจากระบบ</button>
     <div class="stalt" id="stAlt">
       <button class="btn pri" id="btnUseAnyway" type="button" style="display:none">ใช้ตำแหน่งนี้ต่อ</button>
       <button class="btn" id="btnRetry" type="button">ลองอีกครั้ง</button>
-      <button class="btn" id="btnSim" type="button">ตั้งตำแหน่งเองบนแผนที่ (ต้นแบบ)</button>
+      <button class="btn" id="btnSim" type="button">ตั้งตำแหน่งเองบนแผนที่</button>
     </div>
   </div>
 </section>
@@ -240,7 +239,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
     <div class="htabs" id="homeTabs"><button data-t="near" class="on" type="button">ร้านรอบตัว</button><button data-t="pend" type="button">รอกรอก <b id="pendN">0</b></button></div>
     <div class="focus" id="focus">กำลังหาตำแหน่ง…</div>
   </div>
-  <div class="simnote" id="simnote">หาตำแหน่งจริงไม่ได้ — <b>แตะบนแผนที่</b> เพื่อตั้งตำแหน่งจำลอง (เฉพาะต้นแบบ)</div>
+  <div class="simnote" id="simnote">หาตำแหน่งจริงไม่ได้ — <b>แตะบนแผนที่</b> เพื่อตั้งตำแหน่งเอง</div>
   <div id="nearPane">
   <div id="map"></div>
   <div class="strip">
@@ -379,9 +378,6 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
 
 <div class="modal" id="modal"><div class="sheet">
   <div class="okmark">✓</div><h2 id="mTitle" style="text-align:center;margin:6px 0 4px">ส่งแล้ว</h2><div id="mBody" class="mbody"></div>
-  <details class="mdev" id="mDev"><summary>ดูข้อมูลที่จะส่ง (สำหรับตรวจระบบ)</summary>
-    <p class="small">ข้อมูลชุดนี้เข้า Google Sheet "RTR_SMP_Data" และรูปเก็บใน Google Drive</p>
-    <pre id="payload"></pre><button class="btn sm" id="btnDl" type="button" style="margin-top:8px">ดาวน์โหลด JSON</button></details>
   <button class="btn pri" id="btnPart2" type="button" style="width:100%;margin-top:14px;display:none">กรอกส่วนที่ 2 ต่อเลย</button>
   <button class="btn pri" id="btnHome" type="button" style="width:100%;margin-top:14px">กลับหน้าร้านรอบตัว</button>
 </div></div>
@@ -727,7 +723,7 @@ const PF_LATER=[
 const PQ_LATER=PF_LATER.flatMap(s=>s.qs), PQ=[PF_NEED,...PQ_LATER];
 const N_LATER=PQ_LATER.filter(q=>!q.dep).length, N_PHOTO=PQ_LATER.filter(q=>q.ph&&!q.dep).length, DEP_TXT=PQ_LATER.filter(q=>q.dep).map(q=>q.q).join(", ");
 const PKEY="rtrProfiles", PENDKEY="rtrPending", REVIEW_DAYS=90, HB_MAXM=1000, NEAR_M=300;
-let MS_PROV=57.0, SRV_PROFILES={}; // province share + completed profiles come from the sheet
+let MS_PROV=null, SRV_PROFILES={}; // province share + completed profiles come from the sheet
 const fmtD=d=>new Date(d).toLocaleDateString("th-TH",{day:"numeric",month:"short",year:"2-digit"});
 const fmtDT=d=>new Date(d).toLocaleString("th-TH",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit"});
 const getJ=k=>{try{return JSON.parse(load(k)||"{}")||{};}catch(e){return {};}};
@@ -772,7 +768,7 @@ function renderArea(box,s,gps){ if(!box) return; box.innerHTML=""; const A=areaI
   box.append(el("div",{class:"rot",text:"ส่วนแบ่งผู้ใช้มือถือในพื้นที่"}));
   if(A.nn){ const r=el("div",{class:"arow"},el("div",{class:"rov",text:"Nano Cluster "+A.nn.id})), L=level(A.nn.v), d=Math.round((A.nn.v-MS_PROV)*10)/10;
     r.append(el("div",{style:"text-align:right"},el("span",{class:"lv "+L[1],text:L[0]}),el("div",{class:"small num",text:`true ${A.nn.v.toFixed(1)}% · AIS ${(100-A.nn.v).toFixed(1)}%`})));
-    box.append(r, el("div",{class:"small",style:"margin-top:4px",text:d===0?`เท่ากับทั้งจังหวัด (${MS_PROV.toFixed(1)}%)`:`${d>0?"สูงกว่า":"ต่ำกว่า"}ทั้งจังหวัด (${MS_PROV.toFixed(1)}%) ${Math.abs(d).toFixed(1)} จุด`})); }
+    box.append(r, el("div",{class:"small",style:"margin-top:4px",text:MS_PROV==null?"ทั้งจังหวัด: ไม่มีข้อมูล":(d===0?`เท่ากับทั้งจังหวัด (${MS_PROV.toFixed(1)}%)`:`${d>0?"สูงกว่า":"ต่ำกว่า"}ทั้งจังหวัด (${MS_PROV.toFixed(1)}%) ${Math.abs(d).toFixed(1)} จุด`)})); }
   else box.append(el("div",{class:"small",text:"ไม่มีข้อมูล — ร้านยังไม่มีพิกัด หรือไม่มี Happy Block ในรัศมี 1 กม."}));
   const at=okXY(s)?{lat:s.lat,lon:s.lon}:(gps?{lat:gps.lat,lon:gps.lon}:null);
   if(at){ const near=STORES.filter(x=>x.lat!=null&&(!s||x.id!==s.id)&&dist(at.lat,at.lon,x.lat,x.lon)<=NEAR_M), act=near.filter(x=>x.s!=="inactive").length;
@@ -879,7 +875,7 @@ function saveLater(){ if(!qValidate(PQ_LATER,"pl_")){ const b=document.querySele
   let st="sent"; api({action:"profile",profile:out}).then(r=>{ if(!r.ok) throw new Error(r.error); }).catch(()=>{ st=queue({body:{action:"profile",profile:out},at:done}); })
     .finally(()=>{ btn.disabled=false; showDone(st==="sent"?"บันทึกโปรไฟล์แล้ว":"บันทึกไว้ในเครื่อง",[name,st==="sent"?"ส่งเข้าระบบแล้ว "+fmtDT(new Date()):"ยังส่งไม่ได้ — ระบบจะส่งให้อัตโนมัติเมื่อมีสัญญาณ"],out,st==="sent"); }); }
 function showDone(title,lines,data,ok=true,next=null){ $("#mTitle").textContent=title; const m=$(".okmark"); m.textContent=ok?"✓":"!"; m.classList.toggle("wait",!ok); const b=$("#mBody"); b.innerHTML=""; lines.filter(Boolean).forEach((t,i)=>b.append(el("div",{class:i?"small":"mname",text:t})));
-  $("#payload").textContent=JSON.stringify(data,null,2); $("#mDev").open=false; const nb=$("#btnPart2"), hb=$("#btnHome"); nb.style.display=next?"block":"none"; nb.dataset.k=next||"";
+  const nb=$("#btnPart2"), hb=$("#btnHome"); nb.style.display=next?"block":"none"; nb.dataset.k=next||"";
   hb.className=next?"btn":"btn pri"; hb.textContent=next?"ไว้กรอกทีหลัง (อยู่ในแท็บรอกรอก)":"กลับหน้าร้านรอบตัว"; $("#modal").classList.add("on"); }
 
 pendCount();
@@ -974,7 +970,6 @@ async function submit(){ const btn=$("#btnNext"); if(btn.dataset.busy) return; b
   showDone(st==="sent"?"ส่งแล้ว":"บันทึกไว้ในเครื่อง",[P.store_name+(P.store_id?` (${P.store_id})`:""),
     st==="sent"?"ส่งเข้าระบบแล้ว "+fmtDT(new Date()):"ยังส่งไม่ได้ — เก็บไว้ในเครื่อง ระบบจะส่งให้อัตโนมัติเมื่อมีสัญญาณ"+(st==="nophotos"?" (รูปเก็บไม่ได้ เพราะพื้นที่เครื่องเต็ม)":""),
     P.profile?(pk?`โปรไฟล์ส่วนที่ 2 (${N_LATER} ข้อ) — กรอกต่อเลย หรือเก็บไว้ในแท็บรอกรอก`:"เก็บโปรไฟล์ส่วนที่ 2 ไว้ในเครื่องไม่ได้ (พื้นที่เครื่องเต็ม)"):null],P,st==="sent",pk); }
-$("#btnDl").addEventListener("click",()=>{const b=new Blob([$("#payload").textContent],{type:"application/json"});const a=el("a",{href:URL.createObjectURL(b),download:"rtr_visit_"+Date.now()+".json"});document.body.append(a);a.click();a.remove();});
 $("#btnPart2").addEventListener("click",()=>{ const k=$("#btnPart2").dataset.k; $("#modal").classList.remove("on"); pendCount(); if(k&&pendings()[k]) openLater(k); else showView("home"); });
 $("#btnHome").addEventListener("click",()=>{$("#modal").classList.remove("on");showView("home"); pendCount(); if(homeTab==="pend") renderPending();});
 
@@ -1022,7 +1017,9 @@ function outCount(){ const n=outbox().length; $("#outCard").style.display=n?"blo
   $("#pendN").textContent=Object.keys(pendings()).length+n; $("#pendN").style.display=(Object.keys(pendings()).length+n)?"inline-flex":"none"; }
 let flushing=false;
 async function flushOutbox(){ if(flushing||!API||!PIN) return; flushing=true; const b=$("#btnFlush"); b.disabled=true;
-  try{ let a=outbox(); while(a.length){ const r=await api(a[0].body); if(!r.ok) break; a.shift(); setOutbox(a); } }catch(e){}
+  // re-read the outbox every round and remove only the item that was sent (items queued meanwhile are kept)
+  const okey=it=>JSON.stringify([it.at,it.body.action,it.body.visit?it.body.visit.visit_id:null,it.body.profile?[it.body.profile.visit_id,it.body.profile.store_id,it.body.profile.completed_at]:null]);
+  try{ for(;;){ const a=outbox(); if(!a.length) break; const k=okey(a[0]), r=await api(a[0].body); if(!r.ok) break; setOutbox(outbox().filter(x=>okey(x)!==k)); } }catch(e){}
   flushing=false; b.disabled=false; outCount(); }
 window.addEventListener("online",flushOutbox);
 $("#btnFlush").addEventListener("click",flushOutbox);
@@ -1036,8 +1033,7 @@ function initData(d){
   d.stores.forEach(x=>{ const s={...x}; s.ga=x.ga.slice(x.ga.length-take); const n=s.ga.length; s.g9=gName(s.ga[n-1]); s.g8=gName(s.ga[n-2]);
     s.hb=(s.hbt!=null&&nIx[s.nn]!=null)?[s.hbt,nIx[s.nn]]:null; STORES.push(s); });
   prepStores(); calcIPP(); buildLegend(); }
-function setReady(ok,msg,retry){ $("#dataNote").textContent=msg; $("#homeNote").textContent=ok?msg.replace(/^ข้อมูลยอดขาย /,""):""; $("#btnStart").disabled=!ok;
-  $("#btnReload").style.display=retry?"inline-block":"none"; }
+function setReady(ok,msg,retry){ $("#dataNote").textContent=msg; $("#homeNote").textContent=ok?msg.replace(/^ข้อมูลยอดขาย /,""):""; $("#btnStart").disabled=!ok; }
 function gate(msg){ $("#pinMsg").className="stmsg bad-t"; $("#pinMsg").textContent=msg||""; $("#pinIn").value=""; showView("gate"); }
 async function boot(){ // the PIN is checked by the server every time (internet needed to get in)
   if(!PIN){ gate(""); return; }
@@ -1057,7 +1053,6 @@ document.addEventListener("visibilitychange",()=>{ if(!document.hidden) idleChec
 function lockApp(msg){ PIN=""; FILLER=""; LP=null; try{ resetForm(); }catch(e){} S=null; cur=null; tpClose(); $("#modal").classList.remove("on"); gate(msg||""); }
 $("#btnLogout").addEventListener("click",()=>lockApp("ออกจากระบบแล้ว")); $("#btnLogout2").addEventListener("click",()=>lockApp("ออกจากระบบแล้ว"));
 $("#pinIn").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#btnPin").click(); });
-$("#btnReload").addEventListener("click",boot);
 /* ---------- boot ---------- */
 /* ---------- start screen: GPS first ---------- */
 let pending=null, stTimer=null;
