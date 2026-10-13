@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Visit ร้านลูกตู้</title>
+<title>RTR Visit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -96,7 +96,13 @@ h3.sec{font-size:15px;margin:18px 0 8px;font-weight:500;color:var(--ink2)}
 .pincard .btn{width:100%;margin-top:10px}
 @media(min-width:700px){.pincard .btn{width:auto;min-width:220px}}
 .setbtn{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;min-width:44px;height:44px;font-size:17px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);padding:0 8px;white-space:nowrap}
-.setbtn.on{background:var(--brass);border-color:var(--brass);color:var(--brass-ink)}
+.setb{white-space:nowrap}.setb.on{background:var(--brass);border-color:var(--brass);color:var(--brass-ink)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;line-height:1;padding:5px 9px;border-radius:999px;white-space:nowrap;border:1px solid var(--line);background:#f2f4f3;color:var(--ink2)}
+.pill i{width:6px;height:6px;border-radius:3px;background:currentColor;display:inline-block}
+.pill.due{background:#fdecea;color:#b42318;border-color:#f6c9c4}.pill.rs{background:#fff;color:var(--ink);border-color:#cfd5d2}
+.pill.ok{background:#e9f4ec;color:#1f6f3f;border-color:#c7e3cf}.pill.warn{background:#fff4dc;color:#8a5a00;border-color:#efd59b}
+.pills{display:flex;gap:4px;flex-wrap:wrap;margin-top:6px}
+.phbtn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;width:100%;margin-top:6px}.phbtn input{position:absolute;inset:0;opacity:0;cursor:pointer}
 .map-set{cursor:crosshair!important}
 .outarea{display:none;justify-content:space-between;align-items:center;gap:8px;margin:0;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--card)}
 .outarea.on{display:flex}
@@ -218,7 +224,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
 <!-- ===================== HOME ===================== -->
 <section class="view" id="gate">
   <div class="start">
-    <h1>Visit ร้านลูกตู้</h1>
+    <h1>RTR Visit</h1>
     <p class="sub">ใส่รหัสทีม 6 หลัก</p>
     <input id="pinIn" class="pinin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off">
     <button class="btn pri" id="btnPin" type="button" style="margin-top:14px;min-width:200px">เข้าใช้งาน</button>
@@ -229,7 +235,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
 <section class="view" id="start">
   <div class="start">
     <span class="proto" id="dataNote" style="margin-bottom:18px">กำลังโหลดข้อมูลร้าน…</span>
-    <h1>Visit ร้านลูกตู้</h1>
+    <h1>RTR Visit</h1>
     <button class="gpsbtn" id="btnStart" type="button"><span class="ico">📍</span><span id="btnStartTxt">เช็กตำแหน่ง</span></button>
     <div class="stmsg" id="stMsg"></div>
     <button class="btn sm" id="btnLogout2" type="button" style="margin-top:16px">ออกจากระบบ</button>
@@ -258,6 +264,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
   <div class="strip">
     <span class="small">รัศมี</span>
     <div class="seg" id="segR"><button data-r="300" class="on">300 ม.</button><button data-r="1000">1 กม.</button><button data-r="3000">3 กม.</button></div>
+    <button class="btn sm setb" id="btnSet" type="button" aria-pressed="false">📍 ตั้งตำแหน่งเอง</button>
     <span class="small" style="margin-left:6px">เรียง</span>
     <div class="seg" id="segS"><button data-s="pri" class="on">ต้องเข้าก่อน</button><button data-s="dist">ใกล้สุด</button></div>
   </div>
@@ -415,24 +422,74 @@ const store=(k,v)=>{try{localStorage.setItem(k,v);}catch(e){}}, load=k=>{try{ret
 const curTheme=()=>"light"; // light theme only (red-white)
 function css(v){return getComputedStyle(document.documentElement).getPropertyValue(v).trim();}
 
+/* ===== shared by the field app (RTR Visit) and the dashboard (RTR Visit Dashboard) — same rules everywhere ===== */
+const rxName=t=>String(t||"").trim().replace(/^คุณ\s*/,"").replace(/\s+/g,"").toLowerCase(); // a person: ignore "คุณ", spaces and case
+const RX_GO={"A":0,"B":1,"C":2,"ไม่มียอด":3};
+const rxDate=v=>{ if(!v) return null; const d=new Date(v); return isNaN(d)?null:d; };
+/* sales-data date "30 ก.ย. 69" -> end of that day */
+const RX_TH=["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
+function rxAsof(t){ const m=/(\d{1,2})\s*([ก-๙.]+)\s*(\d{2,4})/.exec(t||""); if(!m) return null; const mi=RX_TH.indexOf(m[2]); if(mi<0) return null;
+  let y=+m[3]; if(y<100) y+=2500; if(y>2400) y-=543; return new Date(y,mi,+m[1],23,59,59); }
+/* must-visit ("ต้องเข้าก่อน")
+   1 near the next grade: GA 71–75 (B, next is A), GA 25–29 (C, next is B) in the latest month
+   2 below normal: normal = average MASS+MIGRANT of the earlier months that had sales; latest month at least 10 below
+   3 open problems
+   left out: inactive, no sales in the latest month. new store / duplicate data / reported closed = grey tags only.
+   sale share is shown only, never used here.
+   s needs: ga[], sm[] (per month [MASS,MIGRANT,TOURIST] or null), s, g9, g8, f[], dupw, cl, openP[{prob,day,to,urg}] */
+function rxPrio(s,lastM){
+  const n=s.ga.length, ga=s.ga[n-1], R=[], live=s.s!=="inactive"&&ga>0;
+  s.norm=null; s.mmNow=null; s.loss=0; s.need=null;
+  if(live){
+    if(ga>=71&&ga<=75){ const k=76-ga; s.need=k; R.push({t:1,k:"up",why:`อีก ${k} ซิมขึ้น A`,act:`ดันอีก ${k} ซิม · แนะนำโปร เช็กสต็อก`}); }
+    else if(ga>=25&&ga<=29){ const k=30-ga; s.need=k; R.push({t:1,k:"up",why:`อีก ${k} ซิมขึ้น B`,act:`ดันอีก ${k} ซิม · แนะนำโปร เช็กสต็อก`}); }
+    const mm=i=>{ const g=s.sm&&s.sm[i]; return g?g[0]+g[1]:(s.ga[i]||0); }, past=[];
+    for(let i=0;i<n-1;i++) if(s.ga[i]>0) past.push(mm(i));
+    if(past.length){ s.norm=past.reduce((a,b)=>a+b,0)/past.length; s.mmNow=mm(n-1); const d=s.norm-s.mmNow;
+      if(d>=10){ s.loss=d; R.push({t:2,k:"low",why:`ต่ำกว่าปกติ −${Math.round(d)}`,act:"ถามสาเหตุที่ยอดลด · เช็กสต็อกซิมและโปรที่ร้านใช้"}); } }
+    const op=s.openP||[];
+    if(op.length){ const p=op.slice().sort((a,b)=>(rxDate(a.day)||0)-(rxDate(b.day)||0))[0], dd=rxDate(p.day)?Math.floor((Date.now()-rxDate(p.day).getTime())/864e5):null;
+      s.probAge=dd; R.push({t:3,k:"prob",why:`ปัญหาค้าง ${op.length}`,act:`ตามปัญหา${p.to?"กับ "+p.to:""}`,detail:`${p.prob}${dd!=null?` (ค้าง ${dd} วัน)`:""}${p.urg?" · "+p.urg:""}`}); }
+  }
+  const tags=[]; if(s.s==="ร้านใหม่"||s.f.includes("new")) tags.push("ร้านใหม่"); if(s.f.includes("dup")) tags.push("ข้อมูลซ้ำ"); if(s.cl) tags.push("แจ้งปิด");
+  const gl=g=>g==="ไม่มียอด"?"–":g; let act;
+  if(s.f.includes("dup")) act="ตรวจว่าเป็นร้านเดียวกับ "+s.dupw;
+  else if(s.s==="ร้านใหม่"||s.f.includes("new")) act="ร้านใหม่ — ยืนยันข้อมูลร้าน";
+  else if(s.s==="inactive") act="inactive 3 เดือน — เช็กว่ายังเปิดอยู่ไหม";
+  else if(!(ga>0)) act=`${lastM} ไม่มียอด — ถามสาเหตุ`;
+  else if(RX_GO[s.g9]>RX_GO[s.g8]) act=`เกรดตก ${gl(s.g8)} → ${s.g9} — ถามสาเหตุ`;
+  else if(RX_GO[s.g9]<RX_GO[s.g8]) act=`เกรดขึ้น ${gl(s.g8)} → ${s.g9} — ดูว่าอะไรได้ผล`;
+  else if(s.g9==="A") act="ร้านหลัก — รักษายอด เช็กสต็อก";
+  else if(s.g9==="B") act="ดันขึ้นเกรด A — แนะนำโปร";
+  else act="ยอดต่ำ — แนะนำโปร / ถามอุปสรรค";
+  s.R=R; s.tags=tags; s.tier=R.length?R[0].t:9; s.todo=R.length>0; s.act=R.length?R[0].act:act; s.act0=act;
+  return s; }
+/* order of the must-visit list: near the next grade (fewest sims first) -> furthest below normal -> oldest open problem */
+function rxCmp(a,b){ return (a.tier-b.tier)||(a.tier===1?(a.need-b.need)||((b.ga[b.ga.length-1]||0)-(a.ga[a.ga.length-1]||0)):0)||(a.tier===2?b.loss-a.loss:0)||(a.tier===3?(b.probAge||0)-(a.probAge||0):0); }
+/* pills: [text, kind]  kind: due = must visit, rs = reason, tag = grey */
+/* visited after the sales data: green "เยี่ยมแล้ว <date>" instead of the red pill (reasons stay) */
+function rxPills(s){ const p=[]; if(s.todo){ p.push(s.done&&s.last?["เยี่ยมแล้ว "+s.last.toLocaleDateString("th-TH",{day:"numeric",month:"short"}),"ok"]:["ต้องเข้าก่อน","due"]); s.R.forEach(r=>p.push([r.why,"rs"])); } s.tags.forEach(t=>p.push([t,"tag"])); return p; }
+const rxNormTxt=(s,lastM)=>s.norm==null?null:`ปกติ ${Math.round(s.norm).toLocaleString("th-TH")} ซิม/เดือน · ${lastM} ${Math.round(s.mmNow).toLocaleString("th-TH")} ซิม (ไม่รวม TOURIST)`;
+/* sale share in the store, true vs AIS — survey (needs checking) or the newest visit that answered the carrier question */
+function rxShare(s){ const n=s.ga.length, ga=s.ga[n-1]||0, sv=s.ssv||null, vs=s.vsh||null; let v=null;
+  if(vs){ const c=Array.isArray(vs.carriers)?vs.carriers:String(vs.carriers||"").split(",").map(x=>x.trim()).filter(Boolean); let x=null;
+    if(c.includes("ไม่มี")) x=100;
+    else if(c.includes("AIS")){ if(vs.ais!=null&&ga+vs.ais>0) x=Math.round(1000*ga/(ga+vs.ais))/10; }
+    else if(c.length&&ga>0) x=100;
+    const at=rxDate(vs.at), svd=sv&&sv.d?new Date(sv.d+"T00:00:00+07:00"):null;
+    if(x!=null&&at&&(!svd||isNaN(svd)||at>=svd)) v={v:x,src:"visit",at}; }
+  if(!v&&sv&&sv.v!=null) v={v:+sv.v,src:"survey",m:sv.m,d:sv.d};
+  return v; }
+const rxShareTxt=x=>`true ${x.v.toLocaleString("th-TH",{maximumFractionDigits:1})}% · AIS ${(Math.round((100-x.v)*10)/10).toLocaleString("th-TH",{maximumFractionDigits:1})}%`;
+const rxSharePill=x=>x.src==="visit"?["จากการเยี่ยม "+x.at.toLocaleDateString("th-TH",{day:"numeric",month:"short"}),"ok"]:["รอตรวจสอบ · "+(x.m||"แบบสำรวจ"),"warn"];
+
 /* ---------- next action per store ---------- */
-const MONTHS=[]; let LASTM=""; // last 8 GA months from the sheet
+const MONTHS=[]; let LASTM="", ASOF=null; // last 8 GA months from the sheet
 const GO={"A":0,"B":1,"C":2,"ไม่มียอด":3};
-function analyse(s){
-  const n=s.ga.length, sep=s.ga[n-1];
-  let act,pr;
-  if(s.f.includes("dup")){act="ตรวจว่าเป็นร้านเดียวกับ "+s.dupw;pr=1;}
-  else if(s.s==="ร้านใหม่"||s.f.includes("new")){act="ร้านใหม่ — ยืนยันข้อมูลร้าน";pr=1;}
-  else if(s.s==="inactive"){act="inactive 3 เดือน — เช็กว่ายังเปิดอยู่ไหม";pr=2;}
-  else if(GO[s.g9]>GO[s.g8]){act=`เกรดตก ${s.g8==="ไม่มียอด"?"–":s.g8} → ${s.g9==="ไม่มียอด"?"ไม่มียอด":s.g9} — ถามสาเหตุ`;pr=1;}
-  else if(s.g9==="ไม่มียอด"){act=`${LASTM} ไม่มียอด — ถามสาเหตุ`;pr=1;}
-  else if(GO[s.g9]<GO[s.g8]){act=`เกรดขึ้น ${s.g8==="ไม่มียอด"?"–":s.g8} → ${s.g9} — ดูว่าอะไรได้ผล`;pr=3;}
-  else if(s.g9==="A"){act="ร้านหลัก — รักษายอด เช็กสต็อก";pr=2;}
-  else if(s.g9==="B"){act="ดันขึ้นเกรด A — แนะนำโปร";pr=3;}
-  else {act="ยอดต่ำ — แนะนำโปร / ถามอุปสรรค";pr=3;}
-  const extra=[];
-  if(s.f.includes("nogps"))extra.push("เก็บ GPS"); if(s.f.includes("outside"))extra.push("พิกัดผิด — เก็บ GPS ใหม่");
-  return {act,pr,extra};
+function analyse(s){ // shared must-visit rule (same as the dashboard)
+  rxPrio(s,LASTM); s.sh=rxShare(s); s.done=!!(s.last&&ASOF&&s.last>ASOF)&&!(s.openP||[]).length; s.due=s.todo&&!s.done;
+  const extra=[]; if(s.f.includes("nogps"))extra.push("เก็บ GPS"); if(s.f.includes("outside"))extra.push("พิกัดผิด — เก็บ GPS ใหม่");
+  return {pr:s.due?1:(s.s==="inactive"?2:3),extra};
 }
 function prepStores(){ STORES.forEach(s=>{Object.assign(s,analyse(s)); s.cat = s.s==="inactive"?"S":(s.g9==="ไม่มียอด"?"N":s.g9); s._k=(s.n+"|"+s.id+"|"+s.c).toLowerCase().replace(/\s+/g,"");}); }
 
@@ -451,9 +508,6 @@ function initMap(){
   if(typeof L==="undefined"){ $("#map").innerHTML='<div class="small" style="padding:16px">โหลดแผนที่ไม่ได้ (ไม่มีอินเทอร์เน็ต) — รายการร้านด้านล่างยังใช้ได้</div>'; return; }
   map=L.map("map",{preferCanvas:true,zoomControl:false}).setView(SMP_CENTER,12);
   L.control.zoom({position:"bottomright"}).addTo(map);
-  const SetCtl=L.Control.extend({options:{position:"topright"},onAdd(){ const b=L.DomUtil.create("button","setbtn"); b.type="button"; b.id="btnSet"; b.title="ตั้งตำแหน่งเอง"; b.setAttribute("aria-label","ตั้งตำแหน่งเอง"); b.setAttribute("aria-pressed","false"); b.textContent="✋📍";
-    L.DomEvent.disableClickPropagation(b); L.DomEvent.on(b,"click",e=>{ L.DomEvent.stop(e); setMode(!simMode); }); return b; }});
-  new SetCtl().addTo(map);
   tiles();
   initPins();
 }
@@ -505,7 +559,7 @@ function showPin(id){ const s=STORES.find(x=>x.id===id); if(!s) return; pinId=id
   const go=el("button",{type:"button",class:"btn pri",text:"เยี่ยมร้านนี้"}); go.addEventListener("click",()=>{ closePin(); startVisit(s); });
   c.append(el("div",{class:"pc1"},el("div",{},el("div",{class:"sname",text:s.n}),el("div",{class:"smeta num",text:[s.id,s.o,fmtDist(d)].filter(Boolean).join(" · ")})),
       el("div",{style:"display:flex;gap:8px;align-items:center"},el("span",{class:"g "+(s.cat==="S"?"gS wide":gcls(s.g9)),text:s.cat==="S"?"inactive":(s.g9==="ไม่มียอด"?"–":s.g9)}),x)),
-    el("div",{class:"act p"+s.pr,text:"→ "+s.act}), go);
+    ...[pillRow(s)].filter(Boolean), el("div",{class:"act p"+s.pr,text:"→ "+s.act}), ...normLine(s), go);
   c.classList.add("on"); }
 function closePin(){ const c=$("#pinCard"); if(!c||!c.classList.contains("on")) return; c.classList.remove("on"); c.innerHTML=""; pinId=null; focusId=null; if(map) drawPins(); $$(".scard.hl").forEach(x=>x.classList.remove("hl")); }
 
@@ -537,6 +591,7 @@ function setMode(on){ if(on&&!map) return; simMode=!!on; $("#simnote").classList
   if(map) map.getContainer().classList.toggle("map-set",simMode); if(simMode){ closePin(); window.scrollTo({top:0,behavior:"smooth"}); } }
 function fallback(msg){ $("#focus").textContent=msg; setMode(true); if(!here) renderList(); }
 $("#btnSetCancel").addEventListener("click",()=>setMode(false));
+$("#btnSet").addEventListener("click",()=>setMode(!simMode));
 $("#btnLocate").addEventListener("click",()=>locate());
 $("#segR").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;R=+b.dataset.r;$$("#segR button").forEach(x=>x.classList.toggle("on",x===b));if(here)setHere(here.lat,here.lon,here.src,here.acc);});
 $("#segS").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;sortBy=b.dataset.s;$$("#segS button").forEach(x=>x.classList.toggle("on",x===b));renderList();});
@@ -572,7 +627,7 @@ function card(s){
   const b=el("button",{class:"scard"+(s.cat==="S"?" dim":""),type:"button","data-id":s.id});
   const left=el("div",{},el("div",{class:"sname",text:s.n}),el("div",{class:"smeta num",text:`${s.id}${s.o?" · "+s.o:""}`}));
   const right=el("div",{style:"text-align:right"},el("span",{class:"g "+(s.cat==="S"?"gS wide":gcls(s.g9)),text:s.cat==="S"?"inactive":(s.g9==="ไม่มียอด"?"–":s.g9)}),el("div",{class:"dist num",text:fmtDist(s._d)}));
-  b.append(el("div",{class:"sc1"},left,right), el("div",{class:"act p"+s.pr,text:"→ "+s.act}), histStrip(s), kpiBlock(s));
+  const pw=pillRow(s); b.append(el("div",{class:"sc1"},left,right)); if(pw) b.append(pw); b.append(el("div",{class:"act p"+s.pr,text:"→ "+s.act}), ...normLine(s), histStrip(s), kpiBlock(s));
   if(s.extra.length){const c=el("div",{class:"chips"});s.extra.forEach(x=>c.append(el("span",{class:"chip",text:x})));b.append(c);}
   b.addEventListener("mouseenter",()=>{ if(!pinId) setFocus(s.id,false); });
   b.addEventListener("click",()=>startVisit(s));
@@ -584,8 +639,8 @@ function renderList(){
   NEAREST=[]; $("#outBar").classList.remove("on"); if(!here){ $("#decide").textContent="ยังไม่มีตำแหน่ง"; return; }
   const near=STORES.filter(s=>s.lat!=null).map(s=>{s._d=Math.round(dist(here.lat,here.lon,s.lat,s.lon));return s;}).filter(s=>s._d<=R);
   const vis=near.filter(s=>show[s.cat]);
-  vis.sort(sortBy==="dist"?((a,b)=>a._d-b._d):((a,b)=>a.pr-b.pr||a._d-b._d));
-  const cnt=k=>near.filter(s=>s.cat===k).length, urgent=near.filter(s=>s.pr===1).length;
+  vis.sort(sortBy==="dist"?((a,b)=>a._d-b._d):byDue);
+  const cnt=k=>near.filter(s=>s.cat===k).length, urgent=near.filter(s=>s.due).length;
   $("#decide").innerHTML="";
   $("#decide").append(el("b",{text:`${near.length} ร้านในรัศมี ${R>=1000?R/1000+" กม.":R+" ม."}`}),
     document.createTextNode(` · ต้องเข้าก่อน ${urgent} · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")} · ไม่มียอด ${cnt("N")} · inactive ${cnt("S")}`));
@@ -599,12 +654,18 @@ function renderList(){
   if(pinId){ const ps=STORES.find(x=>x.id===pinId); if(!ps||!show[ps.cat]) closePin(); }
   // stores without coordinates in the same tambon (tambon of nearest store) — only when inside the area
   let nearest=null,nd=1e12; STORES.forEach(s=>{if(s.lat==null||!s.t)return;const d=dist(here.lat,here.lon,s.lat,s.lon);if(d<nd){nd=d;nearest=s;}});
-  if(nearest&&nd<=FAR_M){ const noc=STORES.filter(s=>s.lat==null&&s.t===nearest.t&&s.a===nearest.a&&show[s.cat]).sort((a,b)=>a.pr-b.pr);
+  if(nearest&&nd<=FAR_M){ const noc=STORES.filter(s=>s.lat==null&&s.t===nearest.t&&s.a===nearest.a&&show[s.cat]).sort(byDue);
     if(noc.length){ $("#nocHead").style.display="block"; $("#nocHead").textContent=`ร้านไม่มีพิกัดในตำบล${nearest.t} (${noc.length})`;
       noc.forEach(s=>{s._d=null;$("#nocList").append(card(s));}); } }
   if(focusId) setFocus(focusId,false);
 }
 
+const byDue=(a,b)=>(b.due-a.due)||(a.due?rxCmp(a,b):0)||((a._d??1e12)-(b._d??1e12));
+/* pills + "normal level" line under the store name (shared rule) */
+function pillRow(s){ const p=rxPills(s);
+  if(!p.length) return null; const w=el("div",{class:"pills"}); p.forEach(([t,k])=>{ const x=el("span",{class:"pill "+k}); if(k==="due") x.append(el("i")); x.append(document.createTextNode(t)); w.append(x); }); return w; }
+function normLine(s){ const t=s.R.some(r=>r.k==="low")?rxNormTxt(s,LASTM):null, pd=s.R.find(r=>r.k==="prob");
+  return [t,pd?pd.detail:null].filter(Boolean).map(x=>el("div",{class:"small",text:x})); }
 /* search outside radius */
 $("#hsearch").addEventListener("input",()=>{
   const q=$("#hsearch").value.toLowerCase().replace(/\s+/g,""), box=$("#searchRes"); box.innerHTML="";
@@ -684,9 +745,9 @@ $("#btnExit").addEventListener("click",()=>{ showView("home"); });
 function renderStoreCard(){
   const s=S.store,c=$("#storeCard"); c.innerHTML="";
   c.append(el("div",{class:"sc1"},el("div",{},el("div",{class:"sname",text:s.n}),el("div",{class:"smeta num",text:s.id})),el("span",{class:"g "+(s.cat==="S"?"gS wide":gcls(s.g9)),text:(s.cat==="S"?"inactive":(s.g9==="ไม่มียอด"?"–":s.g9))})));
-  c.append(el("div",{class:"act p"+s.pr,text:"→ "+s.act}), histStrip(s), kpiBlock(s));
+  const pw=pillRow(s); if(pw) c.append(pw); c.append(el("div",{class:"act p"+s.pr,text:"→ "+s.act}), ...normLine(s), histStrip(s), kpiBlock(s));
   const dl=el("dl",{class:"kv"}); const add=(k,v)=>{dl.append(el("dt",{text:k}),el("dd",{text:v||"–"}));};
-  add("สถานะร้าน",s.s); add("ผู้ดูแล",s.o||"ไม่มีข้อมูล"); add("ที่อยู่",s.ad||["ไม่มีข้อมูล",[s.t?"ต."+s.t:"",s.a?"อ."+s.a:""].filter(Boolean).join(" ")].filter(Boolean).join(" · ")); add("ประเภท",[s.ty,s.st].filter(Boolean).join(" · "));
+  add("สถานะร้าน",s.s); if(s.cl) add("แจ้งปิด (แบบสำรวจ)",s.cl); add("ผู้ดูแล",s.o||"ไม่มีข้อมูล"); add("ที่อยู่",s.ad||["ไม่มีข้อมูล",[s.t?"ต."+s.t:"",s.a?"อ."+s.a:""].filter(Boolean).join(" ")].filter(Boolean).join(" · ")); add("ประเภท",[s.ty,s.st].filter(Boolean).join(" · "));
   c.append(dl);
   if(s.extra.length){const ch=el("div",{class:"chips"});s.extra.forEach(x=>ch.append(el("span",{class:"chip",text:x})));c.append(ch);}
   c.append(el("div",{class:"area",id:"scArea"}));
@@ -734,7 +795,7 @@ const HBS=[], NNS=[]; // filled from the sheet (initData)
 const Q=(k,q,o,x={})=>Object.assign({k,q,o},x);
 const DAYS=["จ","อ","พ","พฤ","ศ","ส","อา"], NO_OFF="ไม่มีวันหยุด";
 const PF_NEED=Q("need","ความต้องการหลักของลูกค้า",["เน็ตไม่อั้น","โปรราคาประหยัด","โทรคุ้ม","ซิมต่างชาติ","เติมเงิน","อื่นๆ"],{max:2,other:true,opt:true});
-const PF_PHOTOS=[["front","หน้าร้าน (จากเช็กอิน)"],["counter","เคาน์เตอร์ / จุดวางซิม"],["media","สื่อ true ในร้าน"]];
+const PF_PHOTOS=[["front","หน้าร้าน"],["counter","เคาน์เตอร์ / จุดวางซิม"],["media","สื่อ true ในร้าน"]];
 const PF_SHOOT=PF_PHOTOS.filter(([k])=>k!=="front"); // front photo = the check-in photo
 const PF_LATER=[
  {sec:"ดูจากรูป",qs:[
@@ -797,6 +858,10 @@ function renderArea(box,s,gps){ if(!box) return; box.innerHTML=""; const A=areaI
     r.append(el("div",{style:"text-align:right"},el("span",{class:"lv "+L[1],text:L[0]}),el("div",{class:"small num",text:`true ${A.nn.v.toFixed(1)}% · AIS ${(100-A.nn.v).toFixed(1)}%`})));
     box.append(r, el("div",{class:"small",style:"margin-top:4px",text:MS_PROV==null?"ทั้งจังหวัด: ไม่มีข้อมูล":(d===0?`เท่ากับทั้งจังหวัด (${MS_PROV.toFixed(1)}%)`:`${d>0?"สูงกว่า":"ต่ำกว่า"}ทั้งจังหวัด (${MS_PROV.toFixed(1)}%) ${Math.abs(d).toFixed(1)} จุด`)})); }
   else box.append(el("div",{class:"small",text:"ไม่มีข้อมูลพื้นที่"}));
+  if(s){ const x=s.sh, r=el("div",{class:"arow",style:"margin-top:10px"},el("div",{class:"rov",text:"Sale share ในร้าน"}));
+    if(x){ const [t,k]=rxSharePill(x); r.append(el("div",{style:"text-align:right"},el("span",{class:"pill "+k,text:t}),el("div",{class:"small num",text:rxShareTxt(x)}))); }
+    else r.append(el("div",{class:"small",text:"ไม่มีข้อมูล"}));
+    box.append(r); }
   const at=okXY(s)?{lat:s.lat,lon:s.lon}:(gps?{lat:gps.lat,lon:gps.lon}:null);
   if(at){ const near=STORES.filter(x=>x.lat!=null&&(!s||x.id!==s.id)&&dist(at.lat,at.lon,x.lat,x.lon)<=NEAR_M), act=near.filter(x=>x.s!=="inactive").length;
     box.append(el("div",{class:"rov",style:"margin-top:10px",text:`ร้านเราในรัศมี ${NEAR_M} ม. · ${near.length} ร้าน`}), el("div",{class:"small",text:`ขายอยู่ ${act} · inactive ${near.length-act}`})); }
@@ -820,8 +885,10 @@ function shrink(file,cb){ const img=new Image(), u=URL.createObjectURL(file); im
     el("div",{class:"opts eq"},...["มือถือ","แท็บเล็ต"].map(v=>el("label",{},el("input",{type:"radio",name:"pf_dev",value:v}),v))),
     el("div",{class:"two",style:"margin-top:8px"},el("div",{},el("label",{class:"q sm",for:"pf_devBrand",text:"แบรนด์"}),el("input",{type:"text",id:"pf_devBrand",placeholder:"เช่น Samsung"})),el("div",{},el("label",{class:"q sm",for:"pf_devModel",text:"รุ่น"}),el("input",{type:"text",id:"pf_devModel",placeholder:"เช่น Galaxy A15"}))));
   const ph=el("div",{class:"card"},el("label",{class:"q",text:"รูปสำหรับส่วนที่ 2"}));
-  PF_SHOOT.forEach(([k,t])=>{ const inp=el("input",{type:"file",id:"pfp_"+k,accept:"image/*",capture:"environment"}), th=el("img",{class:"thumb",id:"pft_"+k,alt:""});
-    inp.addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; S.files[k]=f; shrink(f,d=>{ if(!d) return; S.pfPhotos[k]=d; th.src=d; th.style.display="block"; }); });
+  PF_PHOTOS.forEach(([k,t])=>{ const inp=el("input",{type:"file",id:"pfp_"+k,accept:"image/*",capture:"environment"}), th=el("img",{class:"thumb",id:"pft_"+k,alt:""});
+    inp.addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; S.files[k]=f;
+      if(k==="front"){ S.photos.front={name:f.name,size:f.size}; const ft=$(S.isNew?"#thumbFront2":"#thumbFront"); ft.src=URL.createObjectURL(f); ft.style.display="block"; } // same photo as the check-in one
+      shrink(f,d=>{ if(!d) return; S.pfPhotos[k]=d; th.src=d; th.style.display="block"; }); });
     ph.append(el("div",{class:"phrow"},el("div",{class:"small",text:t}),inp,th)); });
   b.append(hrs, qCard(PF_NEED,"pf_"), dev, ph,
     el("div",{class:"card ro"},el("div",{class:"rot",text:`ส่วนที่ 2 · ${N_LATER} ข้อ · กรอกภายในวันนี้`})));
@@ -834,7 +901,7 @@ function pfFill(a){ if(!a) return; $("#pf_open").value=a.open||""; $("#pf_close"
   qFill([PF_NEED],"pf_",a); if(a.dev){const i=document.querySelector(`input[name="pf_dev"][value="${CSS.escape(a.dev)}"]`); if(i) i.checked=true;}
   $("#pf_devBrand").value=a.dev_brand||""; $("#pf_devModel").value=a.dev_model||""; }
 /* front photo of the profile = the check-in / registration photo (downscaled copy kept for the later view) */
-["photoFront","photoFront2"].forEach(id=>$("#"+id).addEventListener("change",e=>{ const f=e.target.files[0]; if(!f||!S) return; shrink(f,d=>{ if(d&&S) S.pfPhotos.front=d; }); }));
+["photoFront","photoFront2"].forEach(id=>$("#"+id).addEventListener("change",e=>{ const f=e.target.files[0]; if(!f||!S) return; shrink(f,d=>{ if(d&&S){ S.pfPhotos.front=d; const t=$("#pft_front"); if(t){ t.src=d; t.style.display="block"; } } }); }));
 const hoursTxt=a=>a.open||a.close?`${a.open||"–"}–${a.close||"–"} น.`:null;
 const devTxt=a=>a.dev?[a.dev,a.dev_brand,a.dev_model].filter(Boolean).join(" · "):null;
 
@@ -857,7 +924,7 @@ function renderProfBlock(){ const b=$("#profBlock"); if(!S) return; const pg=doc
   compLabels(); }
 function compLabels(){ const ns=notSell(); $("#compLbl").textContent=ns?"ร้านขายซิมค่ายไหนบ้าง":"ร้านขายซิมค่ายอื่นด้วยไหม"; $("#compNoneTxt").textContent=ns?"ไม่ได้ขายซิม":"ไม่ขายค่ายอื่น"; renderBest(); }
 function startProfile(){ // called by startVisit / new store (after resetForm)
-  S.pfPhotos={}; PF_SHOOT.forEach(([k])=>{ const i=$("#pfp_"+k); if(i) i.value=""; const t=$("#pft_"+k); if(t){t.style.display="none";t.removeAttribute("src");} });
+  S.pfPhotos={}; PF_PHOTOS.forEach(([k])=>{ const i=$("#pfp_"+k); if(i) i.value=""; const t=$("#pft_"+k); if(t){t.style.display="none";t.removeAttribute("src");} });
   $$("#profBlock .card.bad").forEach(c=>c.classList.remove("bad")); qOther([PF_NEED],"pf_");
   S.prof=S.isNew?{key:null,prev:null,pend:null,due:true}:profileState();
   if(S.prof.prev) pfFill(S.prof.prev.a);
@@ -885,12 +952,17 @@ function renderPending(){ const box=$("#pendList"), all=Object.values(pendings()
       el("div",{class:"small",style:"margin-top:6px",text:nph?`มีรูป ${nph}/${PF_PHOTOS.length} (รวมรูปหน้าร้าน)`:(p.photosDropped?"รูปเก็บไม่ได้ (พื้นที่เครื่องเต็ม)":"ไม่มีรูป")}));
     b.addEventListener("click",()=>openLater(p.key)); box.append(b); }); }
 let LP=null;
-function openLater(key){ LP=pendings()[key]; if(!LP) return; const w=$("#laterBody"); w.innerHTML=""; $("#lTitle").textContent=LP.name;
+function laterPhoto(k,t){ const d=LP.photos&&LP.photos[k], fig=el("figure",{});
+  const im=d?el("img",{src:d,alt:t}):el("div",{class:"noph",text:"ไม่มีรูป"}); if(d) im.addEventListener("click",()=>im.classList.toggle("zoom"));
+  const inp=el("input",{type:"file",accept:"image/*",capture:"environment"}), b=el("label",{class:"btn sm phbtn"}); b.append(document.createTextNode(d?"ถ่ายใหม่":"ถ่ายรูป"),inp);
+  inp.addEventListener("change",async e=>{ const f=e.target.files[0]; if(!f||!LP) return; const lp=LP;
+    const big=await b64img(f); shrink(f,sm=>{ if(!sm||LP!==lp) return; lp.photos=lp.photos||{}; lp.photos[k]=sm; lp.newPh=lp.newPh||{}; if(big) lp.newPh[k]=big;
+      fig.replaceWith(laterPhoto(k,t)); }); }); // kept in memory until "บันทึก" (the phone keeps the old picture)
+  fig.append(im,el("figcaption",{text:t}),b); return fig; }
+function openLater(key){ LP=pendings()[key]; if(!LP) return; LP.newPh={}; LP.photos={...(LP.photos||{})}; const w=$("#laterBody"); w.innerHTML=""; $("#lTitle").textContent=LP.name;
   w.append(el("div",{class:"small",style:"margin-bottom:10px",text:`เยี่ยมเมื่อ ${fmtDT(LP.visitAt)}`+(LP.prev?" · ทวนโปรไฟล์ คำตอบเดิมเลือกไว้ให้แล้ว":"")}));
   PF_LATER.forEach(sec=>{ w.append(el("h3",{class:"sec",text:sec.sec}));
-    if(sec.sec==="ดูจากรูป"){ const g=el("div",{class:"phgrid"}); PF_PHOTOS.forEach(([k,t])=>{ const d=LP.photos&&LP.photos[k];
-      const im=d?el("img",{src:d,alt:t}):el("div",{class:"noph",text:"ไม่มีรูป"}); if(d) im.addEventListener("click",()=>im.classList.toggle("zoom"));
-      g.append(el("figure",{},im,el("figcaption",{text:t}))); }); w.append(g); }
+    if(sec.sec==="ดูจากรูป"){ const g=el("div",{class:"phgrid"}); PF_PHOTOS.forEach(([k,t])=>g.append(laterPhoto(k,t))); w.append(g); }
     sec.qs.forEach(q=>w.append(qCard(q,"pl_"))); });
   if(LP.prev) qFill(PQ_LATER,"pl_",LP.prev); showView("later"); }
 function saveLater(){ if(!qValidate(PQ_LATER,"pl_")){ const b=document.querySelector("#later .card.bad"); if(b) b.scrollIntoView({behavior:"smooth",block:"center"}); return; }
@@ -899,8 +971,9 @@ function saveLater(){ if(!qValidate(PQ_LATER,"pl_")){ const b=document.querySele
   const all=pendings(); delete all[LP.key]; setJ(PENDKEY,all);
   const out={type:"profile_complete",store_id:LP.sid,store_name:LP.name,visit_at:LP.visitAt,completed_at:done,review:LP.prev?"ทวน":"ครั้งแรก",answers:full,
     shown:{nano_cluster:LP.area&&LP.area.nn?LP.area.nn.id:null,true_share_nn:LP.area&&LP.area.nn?LP.area.nn.v:null,true_share_hb:LP.area?LP.area.hb:null}};
-  out.visit_id=LP.vid||null; const name=LP.name; LP=null; pendCount(); const btn=$("#btnLaterSave"); btn.disabled=true;
-  let st="sent"; api({action:"profile",profile:out}).then(r=>{ if(!r.ok) throw new Error(r.error); }).catch(()=>{ st=queue({body:{action:"profile",profile:out},at:done}); })
+  out.visit_id=LP.vid||null; const name=LP.name, photos=Object.entries(LP.newPh||{}).map(([key,b64])=>({key,b64})); LP=null; pendCount(); const btn=$("#btnLaterSave"); btn.disabled=true;
+  if(photos.length) out.photos_retaken=photos.map(x=>x.key);
+  let st="sent"; api({action:"profile",profile:out,photos}).then(r=>{ if(!r.ok) throw new Error(r.error); }).catch(()=>{ st=queue({body:{action:"profile",profile:out,photos},at:done}); })
     .finally(()=>{ btn.disabled=false; showDone(st==="sent"?"บันทึกโปรไฟล์แล้ว":"บันทึกไว้ในเครื่อง",[name,st==="sent"?"ส่งแล้ว "+fmtDT(new Date()):"ยังไม่ได้ส่ง · ส่งเองเมื่อมีสัญญาณ"],out,st==="sent"); }); }
 function showDone(title,lines,data,ok=true,next=null){ $("#mTitle").textContent=title; const m=$(".okmark"); m.textContent=ok?"✓":"!"; m.classList.toggle("wait",!ok); const b=$("#mBody"); b.innerHTML=""; lines.filter(Boolean).forEach((t,i)=>b.append(el("div",{class:i?"small":"mname",text:t})));
   const nb=$("#btnPart2"), hb=$("#btnHome"); nb.style.display=next?"block":"none"; nb.dataset.k=next||"";
@@ -987,7 +1060,7 @@ function renderSummary(){
   if(P.problems) sec("ปัญหาที่พบ",[].concat(P.no_problem?[["ผล","ไม่พบปัญหา"]]:[["รูปประกอบ",(P.photos.problems||[]).length+" รูป"]].concat(P.problems.map(x=>[x.problem,[x.result?x.result+(x.result==="ต้องส่งต่อ"&&(x.escalate_to||x.urgency)?` → ${x.escalate_to||"–"}${x.urgency?` (${x.urgency})`:""}`:""):null,x.detail,x.reorder_qty!=null?`สั่งเพิ่ม ${x.reorder_qty} ซิม`:null].filter(Boolean).join(" · ")]))));
   if(P.competitors){ const c=P.competitors, f=o=>[o.sims_per_month!=null?`${o.sims_per_month.toLocaleString()} ซิม/เดือน`:null,o.typical_pack_baht!=null?`แพ็ก ${o.typical_pack_baht.toLocaleString()} บาท`:null].filter(Boolean).join(" · ")||"ไม่ได้ระบุตัวเลข";
     sec("คู่แข่ง",[["ค่ายที่ขาย",c.carriers.map(x=>x==="ไม่มี"?(notSell()?"ไม่ได้ขายซิม":"ไม่ขายค่ายอื่น"):x).join(", ")],["AIS",c.ais?f(c.ais):undefined],["ค่ายอื่น",c.other?((c.other.name?c.other.name+" · ":"")+f(c.other)):undefined],["ขายดีสุด",c.best_seller??undefined]]); }
-  if(P.profile){ const a=P.profile.answers; sec("โปรไฟล์ร้าน — ถามที่ร้าน ("+P.profile.review+")",[["เวลาเปิด–ปิด",hoursTxt(a)],["ปิดวัน",(a.off||[]).join(" ")],[PF_NEED.q,ansTxt(a,"need")],["อุปกรณ์ลงทะเบียน",devTxt(a)],["รูปที่ถ่าย",P.profile.photos.filter(k=>k!=="front").length+"/"+PF_SHOOT.length],["ส่วนที่ 2",`${N_LATER} ข้อ`]]); }
+  if(P.profile){ const a=P.profile.answers; sec("โปรไฟล์ร้าน — ถามที่ร้าน ("+P.profile.review+")",[["เวลาเปิด–ปิด",hoursTxt(a)],["ปิดวัน",(a.off||[]).join(" ")],[PF_NEED.q,ansTxt(a,"need")],["อุปกรณ์ลงทะเบียน",devTxt(a)],["รูปที่ถ่าย",P.profile.photos.length+"/"+PF_PHOTOS.length],["ส่วนที่ 2",`${N_LATER} ข้อ`]]); }
   if(P.campaign) sec("แคมเปญ",[["แคมเปญ",P.campaign.name],["สื่อที่ร้าน",P.campaign.materials],["ร้านเข้าใจ",P.campaign.store_understands],["ลูกค้าตอบรับ",P.campaign.customer_response],["ความเห็น",P.campaign.feedback]]);
 }
 async function submit(){ const btn=$("#btnNext"); if(btn.dataset.busy) return; btn.dataset.busy="1"; btn.disabled=true; btn.textContent="กำลังส่ง…";
@@ -995,6 +1068,10 @@ async function submit(){ const btn=$("#btnNext"); if(btn.dataset.busy) return; b
   let photos=[]; try{ photos=await collectPhotos(P); }catch(e){}
   let st="sent"; try{ const r=await api({action:"visit",visit:P,photos}); if(!r.ok) throw new Error(r.error||"error"); }catch(e){ st=queue({body:{action:"visit",visit:P,photos},at:P.time_out}); }
   delete btn.dataset.busy; btn.disabled=false; progress(); pendCount(); outCount();
+  if(S.store){ const s=S.store, c=P.competitors; s.last=new Date();
+    if(c&&c.carriers&&c.carriers.length) s.vsh={at:s.last.toISOString(),carriers:c.carriers,ais:c.ais?c.ais.sims_per_month:null};
+    (P.problems||[]).filter(x=>x.result==="ต้องส่งต่อ").forEach(x=>s.openP.push({prob:x.problem,day:s.last.toISOString(),to:x.escalate_to||"",urg:x.urgency||""}));
+    Object.assign(s,analyse(s)); if(here) renderList(); }
   showDone(st==="sent"?"ส่งแล้ว":"บันทึกไว้ในเครื่อง",[P.store_name+(P.store_id?` (${P.store_id})`:""),
     st==="sent"?"ส่งแล้ว "+fmtDT(new Date()):"ยังไม่ได้ส่ง · ส่งเองเมื่อมีสัญญาณ"+(st==="nophotos"?" (รูปเก็บไม่ได้ เพราะพื้นที่เครื่องเต็ม)":""),
     P.profile?(pk?`ส่วนที่ 2 · ${N_LATER} ข้อ`:"เก็บโปรไฟล์ส่วนที่ 2 ไว้ในเครื่องไม่ได้ (พื้นที่เครื่องเต็ม)"):null],P,st==="sent",pk); }
@@ -1058,7 +1135,9 @@ function initData(d){
   d.nns.forEach(x=>NNS.push(x)); const nIx={}; NNS.forEach((x,i)=>nIx[x[0]]=i);
   d.hbs.forEach(h=>{ if(h[0]!=null&&h[1]!=null&&nIx[h[3]]!=null) HBS.push([h[0],h[1],h[2],nIx[h[3]]]); });
   if(d.prov!=null) MS_PROV=d.prov; SRV_PROFILES=d.profiles||{};
-  d.stores.forEach(x=>{ const s={...x}; s.ga=x.ga.slice(x.ga.length-take); const n=s.ga.length; s.g9=gName(s.ga[n-1]); s.g8=gName(s.ga[n-2]);
+  ASOF=rxAsof(d.asof); const SS=d.ss||{}, VL=d.vl||{}, LV=d.lv||{}, OP=d.open||{};
+  d.stores.forEach(x=>{ const s={...x}; s.ga=x.ga.slice(x.ga.length-take); s.sm=x.sm?x.sm.slice(x.sm.length-take):null; const n=s.ga.length; s.g9=gName(s.ga[n-1]); s.g8=gName(s.ga[n-2]);
+    s.ssv=SS[s.id]||null; s.vsh=VL[s.id]||null; s.last=LV[s.id]?new Date(LV[s.id]):null; s.openP=OP[s.id]||[];
     s.hb=(s.hbt!=null&&nIx[s.nn]!=null)?[s.hbt,nIx[s.nn]]:null; STORES.push(s); });
   prepStores(); calcIPP(); buildLegend(); }
 function setReady(ok,msg,retry){ $("#dataNote").textContent=msg; $("#homeNote").textContent=ok?msg.replace(/^ข้อมูลยอดขาย /,""):""; $("#btnStart").disabled=!ok; }
