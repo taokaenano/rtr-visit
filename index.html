@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>RTR Visit</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
@@ -212,7 +212,7 @@ input.tp{cursor:pointer;caret-color:transparent;background-image:linear-gradient
 .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:flex-end;justify-content:center;z-index:2000}
 .modal.on{display:flex}
 .sheet{background:var(--card);width:100%;max-width:600px;border-radius:16px 16px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
-pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;overflow:auto;max-height:44vh;white-space:pre-wrap;word-break:break-all}
+pre{font-family:'Kanit',sans-serif;font-size:11px;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:10px;overflow:auto;max-height:44vh;white-space:pre-wrap;word-break:break-all}
 .leaflet-container{font-family:'Kanit',sans-serif;background:var(--panel)}
 .leaflet-bar a{background:var(--panel);color:var(--ink);border-color:var(--line)}
 .leaflet-control-attribution{background:var(--panel)!important;color:var(--ink2)!important}
@@ -469,7 +469,9 @@ function rxCmp(a,b){ return (a.tier-b.tier)||(a.tier===1?(a.need-b.need)||((b.ga
 /* pills: [text, kind]  kind: due = must visit, rs = reason, tag = grey */
 /* visited after the sales data: green "เยี่ยมแล้ว <date>" instead of the red pill (reasons stay) */
 function rxPills(s){ const p=[]; if(s.todo){ p.push(s.done&&s.last?["เยี่ยมแล้ว "+s.last.toLocaleDateString("th-TH",{day:"numeric",month:"short"}),"ok"]:["ต้องเข้าก่อน","due"]); s.R.forEach(r=>p.push([r.why,"rs"])); } s.tags.forEach(t=>p.push([t,"tag"])); return p; }
-const rxNormTxt=(s,lastM)=>s.norm==null?null:`ปกติ ${Math.round(s.norm).toLocaleString("th-TH")} ซิม/เดือน · ${lastM} ${Math.round(s.mmNow).toLocaleString("th-TH")} ซิม (ไม่รวม TOURIST)`;
+/* line under the reasons: total GA (all customer groups) like every other number; the "below normal" rule itself leaves TOURIST out */
+function rxNormTxt(s,lastM){ if(s.norm==null) return null; const n=s.ga.length, past=s.ga.slice(0,n-1).filter(v=>v>0); if(!past.length) return null;
+  const f=x=>Math.round(x).toLocaleString("th-TH"); return `ปกติ ${f(past.reduce((a,b)=>a+b,0)/past.length)} ซิม/เดือน · ${lastM} ${f(s.ga[n-1]||0)} ซิม`; }
 /* sale share in the store, true vs AIS — survey (needs checking) or the newest visit that answered the carrier question */
 function rxShare(s){ const n=s.ga.length, ga=s.ga[n-1]||0, sv=s.ssv||null, vs=s.vsh||null; let v=null;
   if(vs){ const c=Array.isArray(vs.carriers)?vs.carriers:String(vs.carriers||"").split(",").map(x=>x.trim()).filter(Boolean); let x=null;

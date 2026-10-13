@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>RTR Visit Dashboard</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <style>
 :root{
@@ -209,24 +209,24 @@ table.t tr.on td{background:var(--brass-soft)}
 .slt tr.hl td,.slt tr.on td{background:var(--brass-soft)}
 .slt .nm{font-weight:600;font-size:14px;display:flex;align-items:center;gap:4px}
 .slt .nm svg{flex:none}
-.slt .sub{display:flex;white-space:nowrap;align-items:center;gap:6px;margin-top:3px;font:12px 'IBM Plex Mono',ui-monospace,monospace;color:var(--ink2)}
-.slt .tag{white-space:nowrap;font:600 10.5px 'IBM Plex Mono',ui-monospace,monospace;color:var(--ink2);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
+.slt .sub{display:flex;white-space:nowrap;align-items:center;gap:6px;margin-top:3px;font:12px 'Kanit',sans-serif;color:var(--ink2)}
+.slt .tag{white-space:nowrap;font:600 10.5px 'Kanit',sans-serif;color:var(--ink2);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
 .slt .tag.ina{color:#8a857c;background:#f2f1ee}
 .slt .ty{font-size:13px;font-weight:500}.slt .ow{font-size:12px;color:var(--ink2);margin-top:2px}
 .slt .ga b{font-size:15px;font-variant-numeric:tabular-nums}.slt .ga span{display:block;font-size:11.5px;color:var(--ink2)}
 .slt .sqs{display:flex;gap:3px;align-items:center;flex-wrap:wrap;row-gap:6px}
 .slt td.c-ga{white-space:nowrap}
-.slt .sq{flex:none;width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font:600 10px 'IBM Plex Mono',monospace;color:#fff}
+.slt .sq{flex:none;width:18px;height:18px;border-radius:4px;display:inline-flex;align-items:center;justify-content:center;font:600 10px 'Kanit',sans-serif;color:#fff}
 .slt .sq.cur{outline:2px solid var(--ink);outline-offset:1px}
 .slt .pills{display:flex;gap:4px;flex-wrap:wrap}
 @container (max-width:620px){ .slt thead{display:none} .slt,.slt tbody{display:block} .slt tr{display:grid;grid-template-columns:1fr auto;gap:8px 10px;padding:12px 4px;border-bottom:1px solid var(--line)} .slt td{display:block;padding:0!important;border:0!important;background:none!important} .slt td.c-nm{grid-column:1;grid-row:1} .slt td.c-ga{grid-column:2;grid-row:1;text-align:right} .slt td.c-ty{grid-column:1/-1;grid-row:2} .slt td.c-gr{grid-column:1/-1;grid-row:3} .slt tr:nth-child(even){background:none} .slt td.c-ty div{display:inline;font-size:12.5px;font-weight:400;color:var(--ink2)} .slt td.c-ty .ow::before{content:" · "} }
 .mcard{width:340px;padding:14px 14px 12px}
 .mc-h{display:flex;gap:8px;align-items:flex-start;justify-content:space-between}
-.mc-tag{font:600 10.5px 'IBM Plex Mono',ui-monospace,monospace;color:var(--ink2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-right:6px;vertical-align:2px}
+.mc-tag{font:600 10.5px 'Kanit',sans-serif;color:var(--ink2);border:1px solid var(--line);border-radius:5px;padding:1px 5px;margin-right:6px;vertical-align:2px}
 .mc-name{font-size:16px;font-weight:600;line-height:1.3}
-.mc-meta{font:12px/1.55 'IBM Plex Mono',ui-monospace,monospace;color:var(--ink2);margin-top:4px}
+.mc-meta{font:12px/1.55 'Kanit',sans-serif;color:var(--ink2);margin-top:4px}
 .mc-row{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:10px}
-.mc-sq{width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font:600 11px 'IBM Plex Mono',monospace;color:#fff}
+.mc-sq{width:20px;height:20px;border-radius:5px;display:inline-flex;align-items:center;justify-content:center;font:600 11px 'Kanit',sans-serif;color:#fff}
 .mc-sq.cur{outline:2px solid var(--ink);outline-offset:1px}
 .mc-ga{display:flex;align-items:center;gap:10px;margin-top:10px}
 .mc-ga b{font-size:16px}
@@ -254,6 +254,11 @@ table.t tr.on td{background:var(--brass-soft)}
 .fsel{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:6px 8px;min-height:34px;background:var(--panel);color:var(--ink);max-width:220px}
 .fdate{display:flex;align-items:center;gap:6px}.fdate input{font:inherit;font-size:13px;border:1px solid var(--line);border-radius:8px;padding:5px 8px;min-height:34px;background:var(--panel);color:var(--ink)}
 td.nowrap{white-space:nowrap}
+.slt .sub,.mc-meta{font-variant-numeric:tabular-nums}
+.tile.tlink{cursor:pointer}.tile.tlink:hover{border-color:var(--ink2)}
+.mc-ga{flex-wrap:wrap}.mc-ga .mc-norm{flex-basis:100%}
+.st{display:inline-flex;align-items:center;font-size:11.5px;font-weight:500;line-height:1;padding:4px 8px;border-radius:999px;white-space:nowrap;color:#fff}
+.st.s1{background:#2f8a4f}.st.s2{background:#c4beb3;color:#1d2125}.st.s3{background:#7457b8}
 @container (max-width:620px){ .vt thead{display:none} .vt,.vt tbody{display:block} .vt tr{display:grid;grid-template-columns:1fr auto;gap:2px 10px;padding:10px 4px;border-bottom:1px solid var(--line)}
   .vt td{display:block;padding:0!important;border:0!important;background:none!important} .vt td:nth-child(1){grid-column:1;grid-row:1;font-size:12px;color:var(--ink2)} .vt td:nth-child(2){grid-column:1/-1;grid-row:2;font-weight:500}
   .vt td:nth-child(3){grid-column:1;grid-row:3;font-size:12.5px;color:var(--ink2)} .vt td:nth-child(4){grid-column:2;grid-row:3;font-size:12.5px;text-align:right} .vt td:nth-child(5){grid-column:2;grid-row:1;font-size:12px;color:var(--ink2)} .vt td:nth-child(5)::before{content:"รูป "} }
@@ -368,7 +373,9 @@ function rxCmp(a,b){ return (a.tier-b.tier)||(a.tier===1?(a.need-b.need)||((b.ga
 /* pills: [text, kind]  kind: due = must visit, rs = reason, tag = grey */
 /* visited after the sales data: green "เยี่ยมแล้ว <date>" instead of the red pill (reasons stay) */
 function rxPills(s){ const p=[]; if(s.todo){ p.push(s.done&&s.last?["เยี่ยมแล้ว "+s.last.toLocaleDateString("th-TH",{day:"numeric",month:"short"}),"ok"]:["ต้องเข้าก่อน","due"]); s.R.forEach(r=>p.push([r.why,"rs"])); } s.tags.forEach(t=>p.push([t,"tag"])); return p; }
-const rxNormTxt=(s,lastM)=>s.norm==null?null:`ปกติ ${Math.round(s.norm).toLocaleString("th-TH")} ซิม/เดือน · ${lastM} ${Math.round(s.mmNow).toLocaleString("th-TH")} ซิม (ไม่รวม TOURIST)`;
+/* line under the reasons: total GA (all customer groups) like every other number; the "below normal" rule itself leaves TOURIST out */
+function rxNormTxt(s,lastM){ if(s.norm==null) return null; const n=s.ga.length, past=s.ga.slice(0,n-1).filter(v=>v>0); if(!past.length) return null;
+  const f=x=>Math.round(x).toLocaleString("th-TH"); return `ปกติ ${f(past.reduce((a,b)=>a+b,0)/past.length)} ซิม/เดือน · ${lastM} ${f(s.ga[n-1]||0)} ซิม`; }
 /* sale share in the store, true vs AIS — survey (needs checking) or the newest visit that answered the carrier question */
 function rxShare(s){ const n=s.ga.length, ga=s.ga[n-1]||0, sv=s.ssv||null, vs=s.vsh||null; let v=null;
   if(vs){ const c=Array.isArray(vs.carriers)?vs.carriers:String(vs.carriers||"").split(",").map(x=>x.trim()).filter(Boolean); let x=null;
@@ -383,6 +390,7 @@ const rxShareTxt=x=>`true ${x.v.toLocaleString("th-TH",{maximumFractionDigits:1}
 const rxSharePill=x=>x.src==="visit"?["จากการเยี่ยม "+x.at.toLocaleDateString("th-TH",{day:"numeric",month:"short"}),"ok"]:["รอตรวจสอบ · "+(x.m||"แบบสำรวจ"),"warn"];
 
 const dPills=s=>rxPills(s).filter(x=>!(x[1]==="tag"&&x[0]==="ร้านใหม่"&&s.s==="ร้านใหม่"));
+const stPill=(s,st)=>el("span",{class:"st s"+({"ขายอยู่":1,"inactive":2,"ร้านใหม่":3}[s.s]||2),style:st||null,text:s.s});
 const pillEl=([t,k])=>el("span",{class:"pill "+k},k==="due"?el("i"):null,t);
 const pillsEl=(arr,style)=>arr.length?el("div",{class:"pills",style:style||null},...arr.map(pillEl)):null;
 
@@ -567,9 +575,9 @@ function pinIco(){ const NS="http://www.w3.org/2000/svg", s=document.createEleme
 function storeTable(ss,more){ const n=MONTHS.length, gl=g=>g==="ไม่มียอด"?"–":g, tb=el("tbody");
   ss.forEach(s=>{ const tr=trendOf(s), pl=dPills(s);
     tb.append(el("tr",{class:"click"+(CARD===s.id?" on":""),"data-id":s.id,onclick:()=>showCard(s.id),onmouseenter:()=>hover(s.id,true),onmouseleave:()=>{ if(CARD!==s.id) hover(s.id,false); }},
-      el("td",{class:"c-nm"},el("div",{class:"nm"},el("span",{text:s.n}),s.okxy?pinIco():null),el("div",{class:"sub"},el("span",{class:"tag"+(s.s==="inactive"?" ina":""),text:s.s}),el("span",{text:s.id})),pillsEl(pl,"margin-top:5px")),
+      el("td",{class:"c-nm"},el("div",{class:"nm"},el("span",{text:s.n}),s.okxy?pinIco():null),el("div",{class:"sub"},stPill(s),el("span",{text:s.id})),pillsEl(pl,"margin-top:5px")),
       el("td",{class:"c-ty"},el("div",{class:"ty",text:s.ty||"–"}),el("div",{class:"ow",text:s.o||"ไม่มีผู้ดูแล"})),
-      el("td",{class:"c-ga n ga"},s.ga[n-1]==null?el("b",{text:"–"}):el("b",{text:fmt(s.ga[n-1])}),el("span",{text:s.ga[n-1]==null?(s.lastSale?"ล่าสุด "+s.lastSale:"ไม่มียอด"):(s.ipp!=null?"฿"+fmt(s.ipp)+"/ซิม":"ซิม")})),
+      el("td",{class:"c-ga n ga"},s.ga[n-1]==null?el("b",{text:"–"}):el("b",{text:fmt(s.ga[n-1])}),el("span",{text:s.ga[n-1]==null?(s.lastSale?"ล่าสุด "+s.lastSale:"ไม่มียอด"):(s.ipp!=null?"เติมเงินเดือนแรกเฉลี่ย ฿"+fmt(s.ipp)+"/ซิม":"ซิม")})),
       el("td",{class:"c-gr"},el("div",{class:"sqs"},...s.ga.map((x,i)=>{ const g=gName(x); return el("span",{class:"sq"+(i===n-1?" cur":""),title:`${MONTHS[i]} ${x==null?"ไม่มียอด":fmt(x)}`,style:`background:${GC[g]}`,text:gl(g)}); }),tr?el("span",{class:"pill "+tr[1],style:"margin-left:6px"},el("i"),tr[0]):null)))); });
   const w=el("div",{class:"tw"},el("table",{class:"t slt"},el("thead",{},el("tr",{},el("th",{text:`ร้าน (${fmt(more!=null?more:ss.length)})`}),el("th",{text:"ประเภท · ผู้ดูแล"}),el("th",{class:"n",text:"GA "+LASTM}),el("th",{text:`เกรด ${MONTHS[0]}–${LASTM}`}))),tb));
   return w; }
@@ -579,9 +587,10 @@ const byTodo=(a,b)=>((b.todo&&!b.done)-(a.todo&&!a.done))||byPrio(a,b);
 /* ---------- tab 2: stores (must-visit / all) ---------- */
 let todoK="", hideDone=true, todoShow=60, SHOPM="todo";
 function rShop(L,list){ if(SEL&&BYID[SEL]) return rStore(L,list);
-  const open=list.filter(s=>s.todo&&!s.done);
-  L.append(el("div",{class:"seg",style:"margin-bottom:10px"},...[["todo",`ต้องเข้าก่อน ${fmt(open.length)}`],["all",`ทั้งหมด ${fmt(list.length)}`]].map(([k,t])=>el("button",{type:"button",class:SHOPM===k?"on":"",text:t,onclick:()=>{ SHOPM=k; todoShow=60; render(); }}))));
+  const open=list.filter(s=>s.todo&&!s.done), over=list.filter(s=>s.sh&&s.sh.v<50);
+  L.append(el("div",{class:"seg",style:"margin-bottom:10px"},...[["todo",`ต้องเข้าก่อน ${fmt(open.length)}`],["all",`ทั้งหมด ${fmt(list.length)}`],["ais",`AIS ขายดีกว่า ${fmt(over.length)}`]].map(([k,t])=>el("button",{type:"button",class:SHOPM===k?"on":"",text:t,onclick:()=>{ SHOPM=k; todoShow=60; render(); }}))));
   if(SHOPM==="todo") return rTodo(L,list);
+  if(SHOPM==="ais"){ decide(B(`AIS ขายดีกว่า true ${fmt(over.length)} ร้าน`),`จากแบบสำรวจ ${over.filter(s=>s.sh.src==="survey").length} · จากการเยี่ยม ${over.filter(s=>s.sh.src==="visit").length}`); return rShare(L,over); }
   decide(B(`ร้าน ${fmt(list.length)} ร้าน`),`ต้องเข้าก่อน ${fmt(open.length)}`);
   const rows=list.slice().sort(byTodo);
   if(!rows.length){ L.append(el("div",{class:"empty",text:"ไม่พบร้าน"})); return; }
@@ -701,34 +710,15 @@ function rVisit(L){ const v=V.find(x=>x.id===VSEL); if(!v){ VSEL=null; return rV
 const PL={need:"ความต้องการหลักของลูกค้า",dev:"อุปกรณ์ลงทะเบียน",loc:"ทำเลร้าน",decor:"การตกแต่งร้าน",place:"การจัดวางซิม true",media:"สื่อประชาสัมพันธ์ true",mediaCond:"สภาพสื่อ",traffic:"Traffic ลูกค้า",know:"ความรู้เกี่ยวกับโปร true",pitch:"การแนะนำซิม true"};
 function rVisits(L,list){ if(VSEL) return rVisit(L);
   const ids=new Set(list.map(s=>s.id)), vs=visInView(list), ps=P.filter(p=>p.sid?ids.has(p.sid):!anyF());
-  const todo=list.filter(s=>s.todo), done=todo.filter(s=>s.done).length, op=ps.filter(p=>p.open), notYet=todo.filter(s=>!s.done);
-  const over=list.filter(s=>s.sh&&s.sh.v<50);
-  if(!V.length) decide(B("ยังไม่มีการเยี่ยม"),B(`ต้องเข้าก่อนที่ยังไม่มีใครไป ${notYet.length} ร้าน`));
-  else { const d7=vs.filter(v=>days(v.at)!=null&&days(v.at)<=7).length, d30=vs.filter(v=>days(v.at)!=null&&days(v.at)<=30).length;
-    decide(B(`เยี่ยม ${fmt(vs.length)} ครั้ง ${fmt(new Set(vs.map(v=>v.sid||("NEW:"+v.name))).size)} ร้าน`),`7 วัน ${d7} · 30 วัน ${d30}`,`เยี่ยมร้านที่ต้องเข้าแล้ว ${done}/${todo.length}`+(todo.length?` (${pctOf(done,todo.length)}%)`:""),
-      op.length?B(`ปัญหาค้าง ${op.length} เรื่อง`):"ไม่มีปัญหาค้าง"); }
-  const uniq=new Set(vs.map(v=>v.sid||("NEW:"+v.name))).size, d30=vs.filter(v=>days(v.at)!=null&&days(v.at)<=30).length, aisV=vs.filter(v=>v.carriers.includes("AIS"));
-  L.append(el("div",{class:"tiles t4"},tile("การเยี่ยม",fmt(vs.length),`${fmt(uniq)} ร้าน · 30 วัน ${fmt(d30)} ครั้ง`),tile("เยี่ยมร้านที่ต้องเข้าแล้ว",todo.length?pctOf(done,todo.length)+"%":"–",`${done} จาก ${todo.length} ร้าน`),
-    tile("ปัญหาค้าง",fmt(op.length),`ทั้งหมด ${fmt(ps.length)} เรื่อง`),tile("ร้านที่ขาย AIS ด้วย",vs.some(v=>v.carriers)?pctOf(aisV.length,vs.filter(v=>v.carriers).length)+"%":"–",`${aisV.length} จาก ${vs.filter(v=>v.carriers).length} ครั้ง`)));
-  // 20.1 must-visit stores nobody has visited yet
-  L.append(el("h2",{class:"sec",text:`ต้องเข้าก่อนที่ยังไม่มีใครไป (${fmt(notYet.length)})`}));
-  if(!notYet.length) L.append(el("div",{class:"empty",text:todo.length?"เยี่ยมครบแล้ว":"ไม่มีร้านที่ต้องเข้า"}));
-  else { const age=ASOF?days(ASOF):null, tb=el("tbody"); notYet.slice().sort(byPrio).slice(0,30).forEach(s=>tb.append(el("tr",{class:"click","data-id":s.id,onclick:()=>showCard(s.id),onmouseenter:()=>hover(s.id,true),onmouseleave:()=>{ if(CARD!==s.id) hover(s.id,false); }},
-      el("td",{},el("div",{text:s.n}),pillsEl(s.R.map(r=>[r.why,"rs"]),"margin-top:3px")),el("td",{text:s.o||"ไม่มีผู้ดูแล"}),el("td",{class:"n",text:age==null?"–":age+" วัน"}))));
-    L.append(el("div",{class:"tw"},el("table",{class:"t"},el("thead",{},el("tr",{},el("th",{text:"ร้าน"}),el("th",{text:"ผู้ดูแล"}),el("th",{class:"n",text:"ค้าง"}))),tb)));
-    if(notYet.length>30) L.append(el("button",{class:"btn more",type:"button",text:`ดูทั้งหมด (${notYet.length})`,onclick:()=>{ TF.shop=fCopy(); SHOPM="todo"; todoK=""; hideDone=true; SEL=null; setTab("shop"); }})); }
-  // 20.2 open problems by who must fix them
-  L.append(el("h2",{class:"sec",text:"ปัญหาค้างแยกตามคนที่ต้องแก้"}));
-  if(!op.length) L.append(el("div",{class:"empty",text:ps.length?"ไม่มีปัญหาค้าง":"ยังไม่มีการรายงานปัญหา"}));
-  else { const g={}; op.forEach(p=>{ const k=p.to||"(ไม่ได้ระบุ)"; const x=g[k]=g[k]||{n:0,urg:0,age:[]}; x.n++; if(p.urg==="ด่วน") x.urg++; if(p.day) x.age.push(days(p.day)); });
-    const tb=el("tbody"); Object.entries(g).sort((a,b)=>b[1].urg-a[1].urg||b[1].n-a[1].n).forEach(([k,x])=>{ const mx=x.age.length?Math.max(...x.age):null;
-      tb.append(el("tr",{},el("td",{text:k}),el("td",{class:"n",text:fmt(x.n)}),el("td",{class:"n",text:mx==null?"–":mx+" วัน"}),el("td",{class:"n",text:fmt(x.urg)}))); });
-    L.append(el("div",{class:"tw"},el("table",{class:"t"},el("thead",{},el("tr",{},el("th",{text:"ส่งต่อถึง"}),el("th",{class:"n",text:"เรื่อง"}),el("th",{class:"n",text:"ค้างนานสุด"}),el("th",{class:"n",text:"ด่วน"}))),tb)));
-    L.append(el("h2",{class:"sec",text:"ปัญหาที่ยังค้าง"})); op.slice().sort((a,b)=>(a.day||0)-(b.day||0)).slice(0,30).forEach(p=>{
-      L.append(el("button",{class:"wcard",type:"button",onclick:()=>p.vid&&openVisit(p.vid),onmouseenter:()=>p.sid&&hover(p.sid,true),onmouseleave:()=>p.sid&&hover(p.sid,false)},
-        el("div",{class:"w1"},el("div",{},el("div",{class:"wname",text:p.name||p.sid}),el("div",{class:"wmeta",text:[p.group,p.a,p.owner||"ไม่มีผู้ดูแล"].filter(Boolean).join(" · ")})),el("span",{class:"chips"},el("span",{text:`ค้าง ${days(p.day)??"–"} วัน`}))),
-        el("div",{class:"why t0",text:p.prob+(p.detail?" — "+p.detail:"")+(p.qty!=null?` (ขอสั่ง ${fmt(p.qty)} ซิม)`:"")}),el("div",{class:"nx",text:`ตามกับ ${p.to||"ผู้รับเรื่อง"}${p.urg?" · "+p.urg:""}`}))); }); }
-  if(!V.length){ rShare(L,over); return; }
+  const todo=list.filter(s=>s.todo), done=todo.filter(s=>s.done).length, op=ps.filter(p=>p.open), notYet=todo.length-done;
+  const uniq=new Set(vs.map(v=>v.sid||("NEW:"+v.name))).size, d7=vs.filter(v=>days(v.at)!=null&&days(v.at)<=7).length, d30=vs.filter(v=>days(v.at)!=null&&days(v.at)<=30).length;
+  const withC=vs.filter(v=>v.carriers), aisV=withC.filter(v=>v.carriers.includes("AIS"));
+  decide(vs.length?B(`เยี่ยม ${fmt(vs.length)} ครั้ง ${fmt(uniq)} ร้าน`):B("ยังไม่มีการเยี่ยม"),vs.length?`7 วัน ${d7} · 30 วัน ${d30}`:null,`เยี่ยมร้านที่ต้องเข้าแล้ว ${done}/${todo.length}`,op.length?B(`ปัญหาค้าง ${op.length} เรื่อง`):null);
+  const toTodo=()=>{ TF.shop=fCopy(); SHOPM="todo"; todoK=""; hideDone=true; SEL=null; setTab("shop"); };
+  const tl=tile("ต้องเข้าก่อนที่ยังไม่มีใครไป",fmt(notYet),`เยี่ยมแล้ว ${fmt(done)} จาก ${fmt(todo.length)} ร้าน`); tl.classList.add("tlink"); tl.addEventListener("click",toTodo);
+  L.append(el("div",{class:"tiles t4"},tile("การเยี่ยม",fmt(vs.length),`${fmt(uniq)} ร้าน · 30 วัน ${fmt(d30)} ครั้ง`),tl,
+    tile("ปัญหาค้าง",fmt(op.length),`ทั้งหมด ${fmt(ps.length)} เรื่อง`),tile("ร้านที่ขาย AIS ด้วย",withC.length?pctOf(aisV.length,withC.length)+"%":"–",`${aisV.length} จาก ${withC.length} ครั้ง`)));
+  if(!vs.length){ L.append(el("div",{class:"empty",text:"ยังไม่มีการเยี่ยม"})); return; }
   // weekly visits
   const wk=[], now=new Date(); now.setHours(0,0,0,0); const mon=new Date(now); mon.setDate(now.getDate()-((now.getDay()+6)%7));
   for(let i=7;i>=0;i--){ const a=new Date(mon); a.setDate(mon.getDate()-7*i); const b=new Date(a); b.setDate(a.getDate()+7); wk.push({lab:a.toLocaleDateString("th-TH",{day:"numeric",month:"short"}),n:vs.filter(v=>v.at&&v.at>=a&&v.at<b).length}); }
@@ -745,6 +735,17 @@ function rVisits(L,list){ if(VSEL) return rVisit(L);
     lbox.append(visitTable(rows.slice(0,vShow)));
     if(rows.length>vShow) lbox.append(el("button",{class:"btn more",type:"button",text:`แสดงเพิ่ม (${rows.length-vShow})`,onclick:()=>{ vShow+=30; drawList(); }})); }
   L.append(el("h2",{class:"sec",text:`รายการการเยี่ยม (${fmt(vs.length)})`}),el("div",{class:"vfil"},fq,fsel,fd("from","ตั้งแต่"),fd("to","ถึง")),lbox); drawList();
+  // open problems by who must fix them
+  L.append(el("h2",{class:"sec",text:"ปัญหาค้างแยกตามคนที่ต้องแก้"}));
+  if(!op.length) L.append(el("div",{class:"empty",text:ps.length?"ไม่มีปัญหาค้าง":"ยังไม่มีการรายงานปัญหา"}));
+  else { const g={}; op.forEach(p=>{ const k=p.to||"(ไม่ได้ระบุ)"; const x=g[k]=g[k]||{n:0,urg:0,age:[]}; x.n++; if(p.urg==="ด่วน") x.urg++; if(p.day) x.age.push(days(p.day)); });
+    const tb=el("tbody"); Object.entries(g).sort((a,b)=>b[1].urg-a[1].urg||b[1].n-a[1].n).forEach(([k,x])=>{ const mx=x.age.length?Math.max(...x.age):null;
+      tb.append(el("tr",{},el("td",{text:k}),el("td",{class:"n",text:fmt(x.n)}),el("td",{class:"n",text:mx==null?"–":mx+" วัน"}),el("td",{class:"n",text:fmt(x.urg)}))); });
+    L.append(el("div",{class:"tw"},el("table",{class:"t"},el("thead",{},el("tr",{},el("th",{text:"ส่งต่อถึง"}),el("th",{class:"n",text:"เรื่อง"}),el("th",{class:"n",text:"ค้างนานสุด"}),el("th",{class:"n",text:"ด่วน"}))),tb)));
+    L.append(el("h2",{class:"sec",text:"ปัญหาที่ยังค้าง"})); op.slice().sort((a,b)=>(a.day||0)-(b.day||0)).slice(0,30).forEach(p=>{
+      L.append(el("button",{class:"wcard",type:"button",onclick:()=>p.vid&&openVisit(p.vid),onmouseenter:()=>p.sid&&hover(p.sid,true),onmouseleave:()=>p.sid&&hover(p.sid,false)},
+        el("div",{class:"w1"},el("div",{},el("div",{class:"wname",text:p.name||p.sid}),el("div",{class:"wmeta",text:[p.group,p.a,p.owner||"ไม่มีผู้ดูแล"].filter(Boolean).join(" · ")})),el("span",{class:"chips"},el("span",{text:`ค้าง ${days(p.day)??"–"} วัน`}))),
+        el("div",{class:"why t0",text:p.prob+(p.detail?" — "+p.detail:"")+(p.qty!=null?` (ขอสั่ง ${fmt(p.qty)} ซิม)`:"")}),el("div",{class:"nx",text:`ตามกับ ${p.to||"ผู้รับเรื่อง"}${p.urg?" · "+p.urg:""}`}))); }); }
   // 20.4 registration app
   const appV=vs.filter(v=>v.app), appBad=appV.filter(v=>v.app!=="ไม่มีปัญหา");
   L.append(el("h2",{class:"sec",text:"ปัญหาแอปลงทะเบียนซิม"}));
@@ -753,11 +754,10 @@ function rVisits(L,list){ if(VSEL) return rVisit(L);
     L.append(el("div",{class:"tiles t2"},tile("การเยี่ยมที่เจอปัญหาแอป",pctOf(appBad.length,appV.length)+"%",`${appBad.length} จาก ${appV.length} ครั้ง`),tile("ร้านที่เจอปัญหา",fmt(Object.keys(lastBy).length))));
     if(appBad.length){ const tb=el("tbody"); Object.values(lastBy).forEach(v=>tb.append(el("tr",{class:"click",onclick:()=>openVisit(v.id)},el("td",{text:v.name||v.sid}),el("td",{text:v.appD||v.app}),el("td",{class:"n",text:fmtD(v.at)}))));
       L.append(el("div",{class:"tw"},el("table",{class:"t"},el("thead",{},el("tr",{},el("th",{text:"ร้าน"}),el("th",{text:"ปัญหา"}),el("th",{class:"n",text:"วันที่"}))),tb))); } }
-  // 20.5 true vs AIS
-  rShare(L,over);
+  // AIS sims the store told us during visits
   const aisRows=list.map(s=>({s,v:s.vis.find(x=>x.ais!=null)})).filter(x=>x.v);
   if(aisRows.length){ const tb=el("tbody"); aisRows.sort((a,b)=>b.v.ais-a.v.ais).slice(0,30).forEach(({s,v})=>tb.append(el("tr",{class:"click",onclick:()=>openVisit(v.id)},el("td",{text:s.n}),el("td",{class:"n",text:fmt(v.ais)}),el("td",{class:"n",text:fmt(s.ga[s.ga.length-1])}),el("td",{class:"n",text:fmtD(v.at)}))));
-    L.append(el("h2",{class:"sec",text:"ซิม AIS ต่อเดือนที่ร้านบอก เทียบ GA true"}),el("div",{class:"tw"},el("table",{class:"t"},el("thead",{},el("tr",{},el("th",{text:"ร้าน"}),el("th",{class:"n",text:"AIS ซิม/เดือน"}),el("th",{class:"n",text:"GA true "+LASTM}),el("th",{class:"n",text:"วันที่ถาม"}))),tb))); }
+    L.append(el("h2",{class:"sec",text:"ซิม AIS ต่อเดือนที่ร้านบอกตอนเยี่ยม เทียบ GA true"}),el("div",{class:"tw"},el("table",{class:"t"},el("thead",{},el("tr",{},el("th",{text:"ร้าน"}),el("th",{class:"n",text:"AIS ซิม/เดือน"}),el("th",{class:"n",text:"GA true "+LASTM}),el("th",{class:"n",text:"วันที่ถาม"}))),tb))); }
   const best={}; vs.forEach(v=>{ if(v.best) best[v.best]=(best[v.best]||0)+1; });
   if(Object.keys(best).length){ L.append(el("h2",{class:"sec",text:"ค่ายที่ร้านบอกว่าขายดีสุด"}),hbars(best,vs.filter(v=>v.best).length)); }
   // 20.8 completeness
@@ -777,10 +777,10 @@ function rVisits(L,list){ if(VSEL) return rVisit(L);
     L.append(el("div",{class:"card"},el("div",{style:"font-weight:500;margin-bottom:4px",text:lab}),hbars(m,n))); });
 }
 /* stores where AIS sells more than true (sale share < 50%) */
-function rShare(L,over){ L.append(el("h2",{class:"sec",text:`ร้านที่ AIS ขายดีกว่า true (${fmt(over.length)})`}));
+function rShare(L,over){
   if(!over.length){ L.append(el("div",{class:"empty",text:ST.some(s=>s.sh)?"ไม่มีร้านที่ AIS ขายมากกว่า true":"ยังไม่มีข้อมูล"})); return; }
   const tb=el("tbody"); over.slice().sort((a,b)=>a.sh.v-b.sh.v).slice(0,40).forEach(s=>tb.append(el("tr",{class:"click","data-id":s.id,onclick:()=>showCard(s.id),onmouseenter:()=>hover(s.id,true),onmouseleave:()=>{ if(CARD!==s.id) hover(s.id,false); }},
-    el("td",{},el("div",{text:s.n}),el("div",{class:"nx",text:"เสนอโปร/ค่าคอมให้แข่งได้ — เช็กว่าร้านติดอะไร"})),el("td",{class:"n",text:rxShareTxt(s.sh)}),el("td",{},pillEl(rxSharePill(s.sh))))));
+    el("td",{},el("div",{text:s.n}),el("div",{class:"wmeta",text:[s.o||"ไม่มีผู้ดูแล",s.t?"ต."+s.t:null].filter(Boolean).join(" · ")})),el("td",{class:"n",text:rxShareTxt(s.sh)}),el("td",{},pillEl(rxSharePill(s.sh))))));
   L.append(el("div",{class:"tw"},el("table",{class:"t"},el("thead",{},el("tr",{},el("th",{text:"ร้าน"}),el("th",{class:"n",text:"ส่วนแบ่งในร้าน"}),el("th",{text:"ที่มา"}))),tb))); }
 /* visits of month m vs GA of the month after; waits until that month's sales are in */
 function impactCard(vs){ const byM={}; vs.forEach(v=>{ if(v.at&&v.sid) (byM[v.at.getFullYear()*12+v.at.getMonth()]=byM[v.at.getFullYear()*12+v.at.getMonth()]||new Set()).add(v.sid); });
@@ -828,11 +828,11 @@ function showCard(id,quiet){ const s=BYID[id]; if(!s) return; const c=$("#mcard"
   const sq=s.ga.map((x,i)=>{ const g=gName(x); return el("span",{class:"mc-sq"+(i===n-1?" cur":""),title:`${MONTHS[i]} ${x==null?"ไม่มียอด":fmt(x)}`,style:`background:${GC[g]}`,text:g==="ไม่มียอด"?"–":g}); });
   const nt=rxNormTxt(s,LASTM);
   c.append(
-    el("div",{class:"mc-h"},el("div",{},el("span",{class:"mc-tag",text:s.s}),el("span",{class:"mc-name",text:s.n})),el("button",{class:"mx",type:"button",title:"ปิด","aria-label":"ปิด",text:"✕",onclick:closeCard})),
+    el("div",{class:"mc-h"},el("div",{},stPill(s,"margin-right:6px;vertical-align:2px"),el("span",{class:"mc-name",text:s.n})),el("button",{class:"mx",type:"button",title:"ปิด","aria-label":"ปิด",text:"✕",onclick:closeCard})),
     el("div",{class:"mc-meta",text:[s.id,s.ty,s.t?"ต."+s.t:null,s.a?"อ."+s.a:null].filter(Boolean).join(" · ")}),
     el("div",{class:"mc-meta",style:"margin-top:0",text:s.o||"ไม่มีผู้ดูแล"}),
     el("div",{class:"mc-row"},...sq,tr?el("span",{class:"pill "+tr[1]},el("i"),tr[0]):null),
-    el("div",{class:"mc-ga"},sv,s.ga[n-1]==null?el("div",{},el("b",{text:`${LASTM} ไม่มียอด`}),el("span",{text:s.lastSale?` · มียอดล่าสุด ${s.lastSale}`:" · ไม่มียอดทั้ง 8 เดือน"})):el("div",{},el("b",{text:`GA ${LASTM} ${fmt(s.ga[n-1])}`}),el("span",{text:s.ipp!=null?` ซิม · เติมเงิน ฿${fmt(s.ipp)}`:" ซิม"}))),
+    el("div",{class:"mc-ga"},sv,s.ga[n-1]==null?el("div",{},el("b",{text:`${LASTM} ไม่มียอด`}),el("span",{text:s.lastSale?` · มียอดล่าสุด ${s.lastSale}`:" · ไม่มียอดทั้ง 8 เดือน"})):el("div",{},el("b",{text:`GA ${LASTM} ${fmt(s.ga[n-1])}`}),el("span",{text:" ซิม"})),s.ipp!=null?el("div",{class:"mc-norm",style:"margin-top:2px",text:`เติมเงินเดือนแรกเฉลี่ย ฿${fmt(s.ipp)}/ซิม`}):null),
     nt?el("div",{class:"mc-norm",text:nt}):null,
     pl.length?el("div",{class:"mc-row"},...pl.map(pillEl)):null,
     el("div",{class:"mc-act",text:"→ "+s.act}),
@@ -861,7 +861,7 @@ function rStore(L,list){
   L.append(el("h2",{class:"sec",text:"ข้อมูลร้าน"}),el("div",{class:"card"},el("div",{class:"kv"},...kv("สถานะ",s.s),...kv("ผู้ดูแล",s.o||"ไม่มีผู้ดูแล"),...kv("ที่อยู่",s.ad),...kv("อำเภอ / ตำบล",[s.a,s.t].filter(Boolean).join(" / ")),
     ...kv("ประเภท",[s.ty,s.st].filter(Boolean).join(" · ")),...kv("Nano Cluster",s.nn?(s.nn+(s.nnv!=null?` · true ${s.nnv.toFixed(1)}%`:"")):""),...kv("Sale share ในร้าน",share),
     ...(s.cl?kv("แจ้งปิด (แบบสำรวจ)",s.cl):[]),
-    ...kv("เติมเงินเฉลี่ย/ซิม",s.ipp!=null?"฿"+fmt(s.ipp)+` (${LASTM})`:""),...kv("ลูกค้า "+LASTM,s.seg?`MASS ${s.seg[0]} · MIGRANT ${s.seg[1]} · TOURIST ${s.seg[2]}`:""),...kv("ข้อมูลที่ขาด",s.extra.join(" · ")||"ไม่มี"))));
+    ...kv("เติมเงินเดือนแรกเฉลี่ย/ซิม",s.ipp!=null?"฿"+fmt(s.ipp)+` (${LASTM})`:""),...kv("ลูกค้า "+LASTM,s.seg?`MASS ${s.seg[0]} · MIGRANT ${s.seg[1]} · TOURIST ${s.seg[2]}`:""),...kv("ข้อมูลที่ขาด",s.extra.join(" · ")||"ไม่มี"))));
   L.append(el("h2",{class:"sec",text:`ประวัติการเยี่ยม (${s.vis.length})`}));
   if(!s.vis.length) L.append(el("div",{class:"empty",text:"ยังไม่เคยเยี่ยม"}));
   else { const tl=el("div",{class:"tl"}); s.vis.forEach(v=>{ const links=[["รูปหน้าร้าน",v.front],["รูปเคาน์เตอร์",v.counter],["รูปสื่อ",v.media]].filter(x=>/^https:\/\//.test(x[1]));
