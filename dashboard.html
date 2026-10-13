@@ -601,7 +601,7 @@ function barChart(labels,vals,o={}){ const wrap=el("div",{class:"chart"}); let l
       const hit=mk("rect",{x:pl+step*i,y:pt-10,width:step,height:H-pt-pb+10,fill:"transparent",tabindex:0}); const show=e=>{ const pv=i?vals[i-1]:null; tipShow(e,[el("b",{text:fmt(v)+" "+(o.unit||"")}),el("div",{text:labels[i]+(pv?` · ${sg(r1((v/pv-1)*100))} จากก่อนหน้า`:"")})]); };
       hit.addEventListener("pointermove",show); hit.addEventListener("focus",e=>show({clientX:e.target.getBoundingClientRect().x,clientY:e.target.getBoundingClientRect().y})); hit.addEventListener("pointerleave",tipHide); hit.addEventListener("blur",tipHide); sv.append(hit); });
     wrap.append(sv); if(o.note) wrap.append(el("div",{class:"small",text:o.note})); };
-  const ro=typeof ResizeObserver!=="undefined"?new ResizeObserver(draw):null; if(ro) ro.observe(wrap); else setTimeout(draw,0);
+  const ro=typeof ResizeObserver!=="undefined"?new ResizeObserver(draw):null; if(ro) ro.observe(wrap); setTimeout(draw,0); // draw also without a resize event (e.g. tab opened in the background)
   return wrap; }
 function tipShow(e,nodes){ const t=$("#tip"); t.innerHTML=""; nodes.forEach(n=>t.append(n)); t.style.display="block"; const x=Math.min(e.clientX+14,window.innerWidth-t.offsetWidth-8), y=Math.max(8,e.clientY-t.offsetHeight-10); t.style.left=x+"px"; t.style.top=y+"px"; }
 function tipHide(){ $("#tip").style.display="none"; }
