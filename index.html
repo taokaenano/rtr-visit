@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>RTR เยี่ยมร้าน · SMP</title>
+<title>Visit ร้านลูกตู้</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Kanit:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
@@ -87,7 +87,20 @@ h3.sec{font-size:15px;margin:18px 0 8px;font-weight:500;color:var(--ink2)}
 @keyframes pulse{0%,100%{box-shadow:0 0 0 0 var(--brass-soft)}50%{box-shadow:0 0 0 14px transparent}}
 .stmsg{min-height:48px;margin-top:22px;font-size:15px;max-width:340px}
 .stalt{display:none;flex-direction:column;gap:8px;margin-top:10px;width:100%;max-width:320px}
-.simnote{font-size:12px;color:var(--warn);padding:6px 16px;display:none;border-bottom:1px solid var(--line)}
+.simnote{font-size:13px;color:var(--warn);padding:6px 16px;display:none;border-bottom:1px solid var(--line);align-items:center;justify-content:space-between;gap:8px}
+.simnote.on{display:flex}
+.pincard{display:none;background:var(--card);border-bottom:1px solid var(--line);padding:10px 16px 12px}
+.pincard.on{display:block}
+.pincard .pc1{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+.pincard .pcx{border:0;background:var(--line);color:var(--ink);width:30px;height:30px;border-radius:15px;font-size:16px;line-height:1;cursor:pointer;flex:none}
+.pincard .btn{width:100%;margin-top:10px}
+@media(min-width:700px){.pincard .btn{width:auto;min-width:220px}}
+.setbtn{background:var(--card);color:var(--ink);border:1px solid var(--line);border-radius:10px;min-width:44px;height:44px;font-size:17px;line-height:1;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.15);padding:0 8px;white-space:nowrap}
+.setbtn.on{background:var(--brass);border-color:var(--brass);color:var(--brass-ink)}
+.map-set{cursor:crosshair!important}
+.outarea{display:none;justify-content:space-between;align-items:center;gap:8px;margin:0;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--card)}
+.outarea.on{display:flex}
+.cbx.open .cbx-pan:empty{display:none}
 
 /* form */
 .fhead{position:sticky;top:0;z-index:1000;background:var(--bg);border-bottom:1px solid var(--line);padding:8px 16px}
@@ -205,9 +218,8 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
 <!-- ===================== HOME ===================== -->
 <section class="view" id="gate">
   <div class="start">
-    <h1>RTR ลงพื้นที่ · สมุทรปราการ</h1>
+    <h1>Visit ร้านลูกตู้</h1>
     <p class="sub">ใส่รหัสทีม 6 หลัก</p>
-    <p class="small" style="margin:-6px 0 12px">ต้องต่ออินเทอร์เน็ต · ใส่รหัสทุกครั้งที่เปิดแอป</p>
     <input id="pinIn" class="pinin" type="password" inputmode="numeric" pattern="[0-9]*" maxlength="6" autocomplete="off">
     <button class="btn pri" id="btnPin" type="button" style="margin-top:14px;min-width:200px">เข้าใช้งาน</button>
     <div class="stmsg" id="pinMsg"></div>
@@ -217,8 +229,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
 <section class="view" id="start">
   <div class="start">
     <span class="proto" id="dataNote" style="margin-bottom:18px">กำลังโหลดข้อมูลร้าน…</span>
-    <h1>RTR ลงพื้นที่ · สมุทรปราการ</h1>
-    <p class="sub">เช็กตำแหน่งก่อน แล้วระบบจะแสดงร้านรอบตัวในรัศมี 300 ม.</p>
+    <h1>Visit ร้านลูกตู้</h1>
     <button class="gpsbtn" id="btnStart" type="button"><span class="ico">📍</span><span id="btnStartTxt">เช็กตำแหน่ง</span></button>
     <div class="stmsg" id="stMsg"></div>
     <button class="btn sm" id="btnLogout2" type="button" style="margin-top:16px">ออกจากระบบ</button>
@@ -239,14 +250,16 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
     <div class="htabs" id="homeTabs"><button data-t="near" class="on" type="button">ร้านรอบตัว</button><button data-t="pend" type="button">รอกรอก <b id="pendN">0</b></button></div>
     <div class="focus" id="focus">กำลังหาตำแหน่ง…</div>
   </div>
-  <div class="simnote" id="simnote">หาตำแหน่งจริงไม่ได้ — <b>แตะบนแผนที่</b> เพื่อตั้งตำแหน่งเอง</div>
+  <div class="simnote" id="simnote"><span>แตะแผนที่เพื่อตั้งตำแหน่ง</span><button class="btn sm" id="btnSetCancel" type="button">ยกเลิก</button></div>
   <div id="nearPane">
   <div id="map"></div>
+  <div class="status warn outarea" id="outBar"></div>
+  <div class="pincard" id="pinCard"></div>
   <div class="strip">
     <span class="small">รัศมี</span>
     <div class="seg" id="segR"><button data-r="300" class="on">300 ม.</button><button data-r="1000">1 กม.</button><button data-r="3000">3 กม.</button></div>
     <span class="small" style="margin-left:6px">เรียง</span>
-    <div class="seg" id="segS"><button data-s="pri" class="on">ต้องแวะก่อน</button><button data-s="dist">ใกล้สุด</button></div>
+    <div class="seg" id="segS"><button data-s="pri" class="on">ต้องเข้าก่อน</button><button data-s="dist">ใกล้สุด</button></div>
   </div>
   <div class="legend" id="legend"></div>
   <div class="decide" id="decide"></div>
@@ -259,7 +272,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
   <div id="pendPane" class="wrap" style="display:none"><div class="card ro" id="outCard" style="display:none"><div class="rov" id="outTxt"></div><button class="btn sm" id="btnFlush" type="button" style="margin-top:8px">ส่งตอนนี้</button></div><h3 class="sec" id="pendHead"></h3><div id="pendList"></div></div>
   <div class="searchRes" id="searchRes"></div>
   <div class="homeBottom">
-    <input type="search" id="hsearch" placeholder="ค้นร้านนอกรัศมี — พิมพ์ชื่อร้าน" autocomplete="off">
+    <input type="search" id="hsearch" placeholder="ค้นหาร้าน" autocomplete="off">
     <button class="btn pri" id="btnNewStore" type="button">+ ร้านใหม่</button>
   </div>
 </section>
@@ -284,7 +297,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
       <div class="status" id="gpsStatus" style="margin-top:0"></div>
       <button class="btn sm" id="btnGps" type="button" style="margin-top:8px">📍 จับพิกัดใหม่</button>
       <div class="err">ยังไม่มีพิกัด</div></div>
-    <div class="card" data-req="photoFront"><label class="q" for="photoFront">รูปหน้าร้าน <span class="small">(ไม่บังคับ)</span></label>
+    <div class="card" data-req="photoFront"><label class="q" for="photoFront">รูปหน้าร้าน</label>
       <input type="file" id="photoFront" accept="image/*" capture="environment"><img class="thumb" id="thumbFront" alt=""></div>
     <div id="checksWrap" style="display:none">
       <h3 class="sec">ข้อมูลร้านที่ต้องยืนยัน</h3>
@@ -292,7 +305,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
         <div class="opts"><label><input type="checkbox" id="gpsConfirm">ยืนยันว่าพิกัดเช็กอินคือตำแหน่งร้านจริง</label></div><div class="err">กรุณายืนยันพิกัด</div></div>
       <div class="card" data-req="dupAns" id="q_dup" style="display:none"><label class="q req" id="q_dupLabel"></label>
         <div class="opts"><label><input type="radio" name="dupAns" value="ร้านเดียวกัน">ร้านเดียวกัน</label><label><input type="radio" name="dupAns" value="คนละร้าน">คนละร้าน</label><label><input type="radio" name="dupAns" value="ไม่แน่ใจ">ไม่แน่ใจ</label></div><div class="err">กรุณาตอบ</div></div>
-      <div class="card" data-req="newInfo" id="q_new" style="display:none"><label class="q">ข้อมูลร้าน (ร้านนี้ไม่มีในไฟล์ร้านเดิม)</label>
+      <div class="card" data-req="newInfo" id="q_new" style="display:none"><label class="q">ข้อมูลร้าน</label>
         <label class="q" for="fixOwner">ชื่อเจ้าของร้าน</label><input type="text" id="fixOwner">
         <label class="q" for="fixPhone" style="margin-top:10px">เบอร์โทรร้าน</label><input type="tel" id="fixPhone">
         </div>
@@ -300,10 +313,10 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
     <div class="card" id="profCard" style="display:none"></div>
     <div class="card" data-req="comp" id="compCard"><label class="q req" id="compLbl">ร้านขายซิมค่ายอื่นด้วยไหม</label>
       <div class="opts"><label><input type="checkbox" name="comp" value="ไม่มี"><span id="compNoneTxt">ไม่ขายค่ายอื่น</span></label><label><input type="checkbox" name="comp" value="AIS">AIS</label><label><input type="checkbox" name="comp" value="อื่นๆ">อื่นๆ</label></div>
-      <div class="cmore" id="cm_AIS" style="display:none"><div class="clbl">AIS <span class="small">— ไม่บังคับ</span></div>
+      <div class="cmore" id="cm_AIS" style="display:none"><div class="clbl">AIS </div>
         <div class="two"><div><label class="q sm" for="aisSims">ขายได้กี่ซิม / เดือน</label><input type="number" id="aisSims" inputmode="numeric" min="0"></div>
         <div><label class="q sm" for="aisPack">แพ็กที่ลูกค้าส่วนใหญ่เติม (บาท)</label><input type="number" id="aisPack" inputmode="numeric" min="0"></div></div></div>
-      <div class="cmore" id="cm_OTH" style="display:none"><div class="clbl">ค่ายอื่นๆ <span class="small">— ไม่บังคับ</span></div>
+      <div class="cmore" id="cm_OTH" style="display:none"><div class="clbl">ค่ายอื่นๆ </div>
         <label class="q sm" for="othName">ค่ายอะไร</label><input type="text" id="othName">
         <div class="two" style="margin-top:8px"><div><label class="q sm" for="othSims">ขายได้กี่ซิม / เดือน</label><input type="number" id="othSims" inputmode="numeric" min="0"></div>
         <div><label class="q sm" for="othPack">แพ็กที่ลูกค้าส่วนใหญ่เติม (บาท)</label><input type="number" id="othPack" inputmode="numeric" min="0"></div></div></div>
@@ -322,7 +335,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
     <div class="card" data-req="gps2"><label class="q req">พิกัดร้าน</label><div class="status" id="gpsStatus2" style="margin-top:0"></div>
       <button class="btn sm" id="btnGps2" type="button" style="margin-top:8px">📍 จับพิกัดใหม่</button><div class="err">ยังไม่มีพิกัด</div></div>
     <div class="card ro" id="regArea"></div>
-    <div class="card" data-req="photoFront2"><label class="q" for="photoFront2">รูปหน้าร้าน <span class="small">(ไม่บังคับ)</span></label>
+    <div class="card" data-req="photoFront2"><label class="q" for="photoFront2">รูปหน้าร้าน</label>
       <input type="file" id="photoFront2" accept="image/*" capture="environment"><img class="thumb" id="thumbFront2" alt=""></div>
     <div class="card" data-req="sells"><label class="q req">ร้านนี้ขายซิม true อยู่แล้วหรือยัง</label>
       <div class="opts eq"><label><input type="radio" name="sells" value="ขายอยู่แล้ว">ขายอยู่แล้ว</label><label><input type="radio" name="sells" value="ยังไม่ขาย">ยังไม่ขาย</label></div>
@@ -331,7 +344,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
         <div class="opts"><label><input type="radio" name="recruit" value="สนใจ">สนใจ</label><label><input type="radio" name="recruit" value="ขอคิดดูก่อน">ขอคิดดูก่อน</label><label><input type="radio" name="recruit" value="ไม่สนใจ">ไม่สนใจ</label></div>
         <label class="q req" for="recruitWhy" style="margin-top:10px">เหตุผล / สิ่งที่ร้านกังวล</label><textarea id="recruitWhy"></textarea>
       </div>
-      <div class="err">กรุณาตอบ (ถ้ายังไม่ขาย ให้ใส่ผลการชวนและเหตุผล)</div></div>
+      <div class="err">ใส่ผลการชวนและเหตุผล</div></div>
   </div>
 
   <!-- found: problems + competitors + campaign -->
@@ -340,8 +353,8 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
     <div class="card" data-req="problems" id="probCard"><label class="q req">ปัญหาที่พบ</label>
       <div class="opts col"><label><input type="checkbox" id="noProb" value="ไม่พบปัญหา">ไม่พบปัญหา</label></div>
       <div id="probList"></div>
-      <div id="probPhWrap" style="display:none;margin-top:12px"><label class="q" for="photoProb">แนบรูปประกอบ <span class="small">(ไม่บังคับ · สูงสุด 3 รูป)</span></label><input type="file" id="photoProb" accept="image/*" multiple><div class="thumbs" id="thumbProb"></div></div>
-      <div class="err">กรุณาเลือกอย่างน้อย 1 ข้อ (หรือไม่พบปัญหา)</div></div>
+      <div id="probPhWrap" style="display:none;margin-top:12px"><label class="q" for="photoProb">แนบรูปประกอบ <span class="small">สูงสุด 3 รูป</span></label><input type="file" id="photoProb" accept="image/*" multiple><div class="thumbs" id="thumbProb"></div></div>
+      <div class="err">เลือกปัญหา หรือ "ไม่พบปัญหา"</div></div>
     <details class="card" data-req="camp" id="campCard"><summary><span>ติดตามแคมเปญ <span class="small">(ถ้ามี)</span></span></summary>
       <div style="margin-top:12px">
         <label class="q" for="campName">ชื่อแคมเปญ</label><input type="text" id="campName" placeholder="พิมพ์ชื่อแคมเปญ">
@@ -364,7 +377,7 @@ pre{font-family:'IBM Plex Mono',monospace;font-size:11px;background:var(--bg);bo
 </section>
 
 <section class="view" id="later">
-  <div class="fhead"><div class="mrow"><h1 id="lTitle" style="font-size:16px;margin:0;font-weight:500"></h1><button class="iconbtn" id="btnLaterX" title="กลับ">✕</button></div><div class="steps">โปรไฟล์ร้าน — ส่วนที่ 2 (กรอกทีหลัง)</div></div>
+  <div class="fhead"><div class="mrow"><h1 id="lTitle" style="font-size:16px;margin:0;font-weight:500"></h1><button class="iconbtn" id="btnLaterX" title="กลับ">✕</button></div><div class="steps">โปรไฟล์ร้าน · ส่วนที่ 2</div></div>
   <main class="wrap" id="laterBody"></main>
   <div class="fnav"><button class="btn" id="btnLaterBack" type="button">← รอกรอก</button><button class="btn pri" id="btnLaterSave" type="button">บันทึก</button></div>
 </section>
@@ -450,6 +463,9 @@ function initMap(){
   if(typeof L==="undefined"){ $("#map").innerHTML='<div class="small" style="padding:16px">โหลดแผนที่ไม่ได้ (ไม่มีอินเทอร์เน็ต) — รายการร้านด้านล่างยังใช้ได้</div>'; return; }
   map=L.map("map",{preferCanvas:true,zoomControl:false}).setView(SMP_CENTER,12);
   L.control.zoom({position:"bottomright"}).addTo(map);
+  const SetCtl=L.Control.extend({options:{position:"topright"},onAdd(){ const b=L.DomUtil.create("button","setbtn"); b.type="button"; b.id="btnSet"; b.title="ตั้งตำแหน่งเอง"; b.setAttribute("aria-label","ตั้งตำแหน่งเอง"); b.setAttribute("aria-pressed","false"); b.textContent="✋📍";
+    L.DomEvent.disableClickPropagation(b); L.DomEvent.on(b,"click",e=>{ L.DomEvent.stop(e); setMode(!simMode); }); return b; }});
+  new SetCtl().addTo(map);
   tiles();
   initPins();
 }
@@ -460,8 +476,8 @@ function initPins(){
   cv=document.createElement("canvas"); cv.className="pincv"; map.getContainer().appendChild(cv); ctx=cv.getContext("2d");
   map.on("move resize viewreset zoomend", drawPins);
   map.on("zoomstart",()=>{cv.style.opacity=0;}); map.on("zoomend",()=>{cv.style.opacity=1;});
-  map.on("mousemove",e=>{const h=hitTest(e.containerPoint); map.getContainer().style.cursor=h?"pointer":""; if(h&&h!==hoverId){hoverId=h;setFocus(h,false);} if(!h) hoverId=null;});
-  map.on("click",e=>{ if(simMode){ setHere(e.latlng.lat,e.latlng.lng,"จำลอง"); return; } const h=hitTest(e.containerPoint); if(h) setFocus(h,true); });
+  map.on("mousemove",e=>{const h=hitTest(e.containerPoint); map.getContainer().style.cursor=h?"pointer":""; if(h&&h!==hoverId){hoverId=h;if(!pinId)setFocus(h,false);} if(!h) hoverId=null;});
+  map.on("click",e=>{ if(simMode){ setMode(false); setHere(e.latlng.lat,e.latlng.lng,"ตั้งเอง"); return; } const h=hitTest(e.containerPoint); if(h) showPin(h); else closePin(); });
   drawPins();
 }
 function rr(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
@@ -488,11 +504,22 @@ function hitTest(pt){ const T=8; for(let i=hits.length-1;i>=0;i--){const h=hits[
 function refreshMarkers(){ if(map) drawPins(); }
 function setFocus(id,scroll){
   focusId=id; const s=STORES.find(x=>x.id===id); if(!s) return;
-  $("#focus").innerHTML=""; $("#focus").append(el("b",{text:s.n}), document.createTextNode(` · ${s.act}`+(s._d!=null?` · ${s._d.toLocaleString()} ม.`:"")));
   if(map) drawPins();
   $$(".scard").forEach(c=>c.classList.toggle("hl",c.dataset.id===id));
   if(scroll){const c=document.querySelector(`.scard[data-id="${id}"]`); if(c) c.scrollIntoView({behavior:"smooth",block:"center"});}
 }
+
+const fmtDist=d=>d==null?"":(d>=1000?`${(d/1000).toLocaleString("th-TH",{maximumFractionDigits:1})} กม.`:`${d.toLocaleString()} ม.`);
+let pinId=null;
+function showPin(id){ const s=STORES.find(x=>x.id===id); if(!s) return; pinId=id; setFocus(id,false);
+  const d=here&&s.lat!=null?Math.round(dist(here.lat,here.lon,s.lat,s.lon)):null, c=$("#pinCard"); c.innerHTML="";
+  const x=el("button",{type:"button",class:"pcx",title:"ปิด","aria-label":"ปิด",text:"✕"}); x.addEventListener("click",closePin);
+  const go=el("button",{type:"button",class:"btn pri",text:"เยี่ยมร้านนี้"}); go.addEventListener("click",()=>{ closePin(); startVisit(s); });
+  c.append(el("div",{class:"pc1"},el("div",{},el("div",{class:"sname",text:s.n}),el("div",{class:"smeta num",text:[s.id,s.o,fmtDist(d)].filter(Boolean).join(" · ")})),
+      el("div",{style:"display:flex;gap:8px;align-items:center"},el("span",{class:"g "+(s.cat==="S"?"gS wide":gcls(s.g9)),text:s.cat==="S"?"inactive":(s.g9==="ไม่มียอด"?"–":s.g9)}),x)),
+    el("div",{class:"act p"+s.pr,text:"→ "+s.act}), go);
+  c.classList.add("on"); }
+function closePin(){ const c=$("#pinCard"); if(!c||!c.classList.contains("on")) return; c.classList.remove("on"); c.innerHTML=""; pinId=null; focusId=null; if(map) drawPins(); $$(".scard.hl").forEach(x=>x.classList.remove("hl")); }
 
 /* legend toggles */
 function buildLegend(){ $("#legend").innerHTML=""; CATS[3][1]=LASTM+" ไม่มียอด";
@@ -502,21 +529,26 @@ CATS.forEach(([k,lab,v])=>{const cb=el("input",{type:"checkbox"});cb.checked=sho
   $("#legend").append(el("label",{},cb,"ชื่อถนน"));})(); }
 
 /* ---------- location ---------- */
-function setHere(lat,lon,src,acc){
+function setHere(lat,lon,src,acc){ closePin();
   here={lat:+lat.toFixed(6),lon:+lon.toFixed(6),acc:acc!=null?Math.round(acc):null,src,at:new Date().toISOString()};
-  $("#focus").textContent=`ตำแหน่ง${src==="จำลอง"?"จำลอง":" GPS"}${acc!=null?" ±"+Math.round(acc)+" ม.":""} · แตะร้านบนแผนที่หรือในรายการ`;
+  $("#focus").textContent=`ตำแหน่ง${src==="ตั้งเอง"?"ตั้งเอง":" GPS"}${acc!=null?" ±"+Math.round(acc)+" ม.":""}`;
   if(map){ if(!me) me=L.circleMarker([lat,lon],{radius:7,weight:3,color:css("--ink"),fillColor:css("--bg"),fillOpacity:1}).addTo(map); else me.setLatLng([lat,lon]);
     if(!ring) ring=L.circle([lat,lon],{radius:R,color:css("--ink2"),weight:1,dashArray:"4 4",fill:false}).addTo(map); else {ring.setLatLng([lat,lon]);ring.setRadius(R);}
-    map.fitBounds(ring.getBounds(),{padding:[10,10]}); }
+  }
   renderList();
+  if(map){ if(NEAREST.length) map.fitBounds(L.latLngBounds([[here.lat,here.lon]].concat(NEAREST.map(s=>[s.lat,s.lon]))),{padding:[24,24],maxZoom:16});
+    else map.fitBounds(ring.getBounds(),{padding:[10,10]}); }
 }
 function locate(cb){
   if(!navigator.geolocation){ fallback("อุปกรณ์ไม่รองรับ GPS"); return; }
   $("#focus").textContent="กำลังหาตำแหน่ง…";
-  navigator.geolocation.getCurrentPosition(p=>{simMode=false;$("#simnote").style.display="none";setHere(p.coords.latitude,p.coords.longitude,"GPS",p.coords.accuracy); if(cb)cb(true);},
+  navigator.geolocation.getCurrentPosition(p=>{setMode(false);setHere(p.coords.latitude,p.coords.longitude,"GPS",p.coords.accuracy); if(cb)cb(true);},
     e=>{fallback("หาตำแหน่งไม่ได้: "+e.message); if(cb)cb(false);},{enableHighAccuracy:true,timeout:12000,maximumAge:30000});
 }
-function fallback(msg){ simMode=true; $("#simnote").style.display="block"; $("#focus").textContent=msg; if(!here) renderList(); }
+function setMode(on){ if(on&&!map) return; simMode=!!on; $("#simnote").classList.toggle("on",simMode); const b=$("#btnSet"); if(b){ b.classList.toggle("on",simMode); b.setAttribute("aria-pressed",String(simMode)); }
+  if(map) map.getContainer().classList.toggle("map-set",simMode); if(simMode){ closePin(); window.scrollTo({top:0,behavior:"smooth"}); } }
+function fallback(msg){ $("#focus").textContent=msg; setMode(true); if(!here) renderList(); }
+$("#btnSetCancel").addEventListener("click",()=>setMode(false));
 $("#btnLocate").addEventListener("click",()=>locate());
 $("#segR").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;R=+b.dataset.r;$$("#segR button").forEach(x=>x.classList.toggle("on",x===b));if(here)setHere(here.lat,here.lon,here.src,here.acc);});
 $("#segS").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;sortBy=b.dataset.s;$$("#segS button").forEach(x=>x.classList.toggle("on",x===b));renderList();});
@@ -539,7 +571,7 @@ function kpiBlock(s){
   if(s.ipp==null||!s.seg){ k.append(el("div",{text:`${LASTM} ไม่มียอด — ไม่มีข้อมูลเติมเงินและกลุ่มลูกค้า`})); return k; }
   const d=IPP_MED?Math.round((s.ipp/IPP_MED-1)*100):null;
   const lab=el("div",{},el("div",{text:`เติมเงินเดือนแรก ต่อซิม (${LASTM})`}));
-  if(IPP_MED) lab.append(el("div",{class:"cmp",text:`ค่ากลางจังหวัด ฿${IPP_MED.toLocaleString("th-TH")} · ร้านนี้ ${d>=0?"+":""}${d}%`}));
+  if(IPP_MED) lab.append(el("div",{class:"cmp",text:`ทั้งจังหวัด ฿${IPP_MED.toLocaleString("th-TH")} · ร้านนี้ ${d>=0?"+":""}${d}%`}));
   k.append(el("div",{class:"row"},lab,el("span",{class:"big",text:"฿"+s.ipp.toLocaleString("th-TH")})));
   const tot=s.seg.reduce((a,b)=>a+b,0)||1, bar=el("div",{class:"mixbar"}), lg=el("div",{class:"mixlg"},el("span",{text:"ลูกค้า "+LASTM}));
   s.seg.forEach((v,i)=>{ const pc=Math.round(v/tot*100);
@@ -551,29 +583,36 @@ function kpiBlock(s){
 function card(s){
   const b=el("button",{class:"scard"+(s.cat==="S"?" dim":""),type:"button","data-id":s.id});
   const left=el("div",{},el("div",{class:"sname",text:s.n}),el("div",{class:"smeta num",text:`${s.id}${s.o?" · "+s.o:""}`}));
-  const right=el("div",{style:"text-align:right"},el("span",{class:"g "+(s.cat==="S"?"gS wide":gcls(s.g9)),text:s.cat==="S"?"inactive":(s.g9==="ไม่มียอด"?"–":s.g9)}),el("div",{class:"dist num",text:s._d!=null?`${s._d.toLocaleString()} ม.`:""}));
+  const right=el("div",{style:"text-align:right"},el("span",{class:"g "+(s.cat==="S"?"gS wide":gcls(s.g9)),text:s.cat==="S"?"inactive":(s.g9==="ไม่มียอด"?"–":s.g9)}),el("div",{class:"dist num",text:fmtDist(s._d)}));
   b.append(el("div",{class:"sc1"},left,right), el("div",{class:"act p"+s.pr,text:"→ "+s.act}), histStrip(s), kpiBlock(s));
   if(s.extra.length){const c=el("div",{class:"chips"});s.extra.forEach(x=>c.append(el("span",{class:"chip",text:x})));b.append(c);}
-  b.addEventListener("mouseenter",()=>setFocus(s.id,false));
+  b.addEventListener("mouseenter",()=>{ if(!pinId) setFocus(s.id,false); });
   b.addEventListener("click",()=>startVisit(s));
   return b;
 }
+let NEAREST=[]; const FAR_M=3000;
 function renderList(){
   const L1=$("#list"); L1.innerHTML=""; $("#nocList").innerHTML=""; $("#nocHead").style.display="none";
-  if(!here){ $("#decide").textContent="ยังไม่มีตำแหน่ง — กด ⌖ หรือแตะแผนที่ (โหมดจำลอง)"; return; }
+  NEAREST=[]; $("#outBar").classList.remove("on"); if(!here){ $("#decide").textContent="ยังไม่มีตำแหน่ง"; return; }
   const near=STORES.filter(s=>s.lat!=null).map(s=>{s._d=Math.round(dist(here.lat,here.lon,s.lat,s.lon));return s;}).filter(s=>s._d<=R);
   const vis=near.filter(s=>show[s.cat]);
   vis.sort(sortBy==="dist"?((a,b)=>a._d-b._d):((a,b)=>a.pr-b.pr||a._d-b._d));
   const cnt=k=>near.filter(s=>s.cat===k).length, urgent=near.filter(s=>s.pr===1).length;
   $("#decide").innerHTML="";
   $("#decide").append(el("b",{text:`${near.length} ร้านในรัศมี ${R>=1000?R/1000+" กม.":R+" ม."}`}),
-    document.createTextNode(` · ต้องแวะก่อน ${urgent} · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")} · ไม่มียอด ${cnt("N")} · inactive ${cnt("S")}`));
-  if(!vis.length) L1.append(el("div",{class:"small",text:"ไม่มีร้านในรัศมีนี้ — ลองขยายรัศมี หรือค้นชื่อร้านด้านล่าง"}));
+    document.createTextNode(` · ต้องเข้าก่อน ${urgent} · A ${cnt("A")} · B ${cnt("B")} · C ${cnt("C")} · ไม่มียอด ${cnt("N")} · inactive ${cnt("S")}`));
+  let far=1e12; STORES.forEach(s=>{ if(s.lat!=null&&s._d<far) far=s._d; });
+  const ob=$("#outBar"); ob.innerHTML=""; ob.classList.toggle("on",far>FAR_M&&far<1e12);
+  if(far>FAR_M&&far<1e12){ ob.append(el("span",{text:`อยู่นอกพื้นที่ · ร้านใกล้สุด ${fmtDist(far)}`}));
+    if(map){ const b=el("button",{class:"btn sm",type:"button",text:"ตั้งตำแหน่งเอง"}); b.addEventListener("click",()=>setMode(true)); ob.append(b); } }
   vis.forEach(s=>L1.append(card(s)));
-  // stores without coordinates in the same tambon (tambon of nearest store)
+  if(!vis.length){ NEAREST=STORES.filter(s=>s.lat!=null&&show[s.cat]).sort((a,b)=>a._d-b._d).slice(0,10);
+    if(NEAREST.length){ L1.append(el("h3",{class:"sec",text:"ร้านใกล้สุด"})); NEAREST.forEach(s=>L1.append(card(s))); } }
+  if(pinId){ const ps=STORES.find(x=>x.id===pinId); if(!ps||!show[ps.cat]) closePin(); }
+  // stores without coordinates in the same tambon (tambon of nearest store) — only when inside the area
   let nearest=null,nd=1e12; STORES.forEach(s=>{if(s.lat==null||!s.t)return;const d=dist(here.lat,here.lon,s.lat,s.lon);if(d<nd){nd=d;nearest=s;}});
-  if(nearest){ const noc=STORES.filter(s=>s.lat==null&&s.t===nearest.t&&s.a===nearest.a&&show[s.cat]).sort((a,b)=>a.pr-b.pr);
-    if(noc.length){ $("#nocHead").style.display="block"; $("#nocHead").textContent=`ร้านในตำบล${nearest.t} ที่ยังไม่มีพิกัด (${noc.length}) — ตำบลประมาณจากร้านที่ใกล้ที่สุด`;
+  if(nearest&&nd<=FAR_M){ const noc=STORES.filter(s=>s.lat==null&&s.t===nearest.t&&s.a===nearest.a&&show[s.cat]).sort((a,b)=>a.pr-b.pr);
+    if(noc.length){ $("#nocHead").style.display="block"; $("#nocHead").textContent=`ร้านไม่มีพิกัดในตำบล${nearest.t} (${noc.length})`;
       noc.forEach(s=>{s._d=null;$("#nocList").append(card(s));}); } }
   if(focusId) setFocus(focusId,false);
 }
@@ -583,7 +622,7 @@ $("#hsearch").addEventListener("input",()=>{
   const q=$("#hsearch").value.toLowerCase().replace(/\s+/g,""), box=$("#searchRes"); box.innerHTML="";
   if(q.length<2){box.style.display="none";return;} box.style.display="block";
   const hits=STORES.filter(s=>s._k.includes(q)).slice(0,25);
-  if(!hits.length) box.append(el("div",{class:"small",text:"ไม่พบร้าน — ถ้าเป็นร้านใหม่ กด \"+ ร้านใหม่\""}));
+  if(!hits.length) box.append(el("div",{class:"small",text:"ไม่พบร้าน"}));
   hits.forEach(s=>{s._d=(here&&s.lat!=null)?Math.round(dist(here.lat,here.lon,s.lat,s.lon)):null; box.append(card(s));});
 });
 
@@ -601,7 +640,7 @@ function combo(inp,opts){ // input + own drop-down list in the app style; free t
   function render(){ const q=norm(inp.value.trim()), t=inp.value.trim(); pan.innerHTML="";
     items=opts.filter(o=>!q||norm(o).includes(q)); items.forEach((o,i)=>row(o,(o===inp.value?" on":"")+(i===hi?" hi":""),o));
     if(t&&!opts.includes(t)){ row(`ใช้ชื่อ “${t}”`," cbx-new"+(hi===items.length?" hi":""),t); items=items.concat([t]); }
-    if(!pan.children.length) pan.append(el("div",{class:"cbx-empty",text:"ไม่พบชื่อ — พิมพ์ชื่อเต็มได้เลย"})); }
+  }
   const open=()=>{ hi=-1; render(); w.classList.add("open"); const r=pan.getBoundingClientRect(), lim=window.innerHeight-84; if(r.bottom>lim) window.scrollBy(0,r.bottom-lim); };
   inp.addEventListener("focus",open); inp.addEventListener("click",()=>{ if(!w.classList.contains("open")) open(); });
   inp.addEventListener("input",()=>{ sync(); if(quiet) return; hi=-1; render(); w.classList.add("open"); });
@@ -642,7 +681,7 @@ function resetForm(){
   $("#campCard").open=false; $("#probPhWrap").style.display="none"; $("#thumbProb").innerHTML="";
   ["filler","filler2"].forEach(i=>{ const x=$("#"+i); x.value=FILLER; if(x._sync) x._sync(); });
 }
-function startVisit(s){
+function startVisit(s){ closePin();
   resetForm(); S={store:s,isNew:false,gps:here?{...here}:null,timeIn:new Date().toISOString(),photos:{},files:{},vid:newVid()};
   $("#vTitle").textContent=s.n; renderStoreCard(); gpsText("gpsStatus"); renderChecks(); startProfile();
   go("checkin");
@@ -666,8 +705,8 @@ function renderStoreCard(){
 }
 function gpsText(id){
   const st=$("#"+id), g=S.gps; if(!g){st.className="status bad-t";st.textContent="ยังไม่มีพิกัด — กดจับพิกัดใหม่";return;}
-  let m=`${g.lat}, ${g.lon}`+(g.acc!=null?` (±${g.acc} ม.)`:"")+(g.src==="จำลอง"?" — พิกัดจำลอง":""), cls="status ok";
-  const s=S.store; if(s&&s.lat!=null){const d=Math.round(dist(s.lat,s.lon,g.lat,g.lon)); g.dist=d; if(d>300){m+=` · ห่างพิกัดในระบบ ${d.toLocaleString()} ม.`;cls="status warn";} else m+=` · ตรงกับพิกัดในระบบ (${d} ม.)`;}
+  let m=`${g.lat}, ${g.lon}`+(g.acc!=null?` (±${g.acc} ม.)`:"")+(g.src==="ตั้งเอง"?" · ตั้งเอง":""), cls="status ok";
+  const s=S.store; if(s&&s.lat!=null){const d=Math.round(dist(s.lat,s.lon,g.lat,g.lon)); g.dist=d; if(d>300){m+=` · ห่างพิกัดเดิม ${d.toLocaleString()} ม.`;cls="status warn";} else m+=` · ตรงกับพิกัดเดิม (${d} ม.)`;}
   st.className=cls; st.textContent=m;
   if(id==="gpsStatus") renderArea($("#scArea"),S.store,S.gps); else renderArea($("#regArea"),null,S.gps);
 }
@@ -769,11 +808,11 @@ function renderArea(box,s,gps){ if(!box) return; box.innerHTML=""; const A=areaI
   if(A.nn){ const r=el("div",{class:"arow"},el("div",{class:"rov",text:"Nano Cluster "+A.nn.id})), L=level(A.nn.v), d=Math.round((A.nn.v-MS_PROV)*10)/10;
     r.append(el("div",{style:"text-align:right"},el("span",{class:"lv "+L[1],text:L[0]}),el("div",{class:"small num",text:`true ${A.nn.v.toFixed(1)}% · AIS ${(100-A.nn.v).toFixed(1)}%`})));
     box.append(r, el("div",{class:"small",style:"margin-top:4px",text:MS_PROV==null?"ทั้งจังหวัด: ไม่มีข้อมูล":(d===0?`เท่ากับทั้งจังหวัด (${MS_PROV.toFixed(1)}%)`:`${d>0?"สูงกว่า":"ต่ำกว่า"}ทั้งจังหวัด (${MS_PROV.toFixed(1)}%) ${Math.abs(d).toFixed(1)} จุด`)})); }
-  else box.append(el("div",{class:"small",text:"ไม่มีข้อมูล — ร้านยังไม่มีพิกัด หรือไม่มี Happy Block ในรัศมี 1 กม."}));
+  else box.append(el("div",{class:"small",text:"ไม่มีข้อมูลพื้นที่"}));
   const at=okXY(s)?{lat:s.lat,lon:s.lon}:(gps?{lat:gps.lat,lon:gps.lon}:null);
   if(at){ const near=STORES.filter(x=>x.lat!=null&&(!s||x.id!==s.id)&&dist(at.lat,at.lon,x.lat,x.lon)<=NEAR_M), act=near.filter(x=>x.s!=="inactive").length;
-    box.append(el("div",{class:"rov",style:"margin-top:10px",text:`ร้าน RTR ของเราในรัศมี ${NEAR_M} ม.: ${near.length} ร้าน`}), el("div",{class:"small",text:`ขายอยู่ ${act} · inactive ${near.length-act}`+(okXY(s)?"":" · นับจากพิกัดเช็กอิน")})); }
-  else box.append(el("div",{class:"rov",style:"margin-top:10px",text:`ร้าน RTR ของเราในรัศมี ${NEAR_M} ม.: ไม่มีข้อมูล (ยังไม่มีพิกัด)`}));
+    box.append(el("div",{class:"rov",style:"margin-top:10px",text:`ร้านเราในรัศมี ${NEAR_M} ม. · ${near.length} ร้าน`}), el("div",{class:"small",text:`ขายอยู่ ${act} · inactive ${near.length-act}`})); }
+  else box.append(el("div",{class:"rov",style:"margin-top:10px",text:`ร้านเราในรัศมี ${NEAR_M} ม. · ไม่มีข้อมูล`}));
   return A; }
 
 /* photos: downscale before keeping (prototype keeps them in this browser only) */
@@ -792,12 +831,12 @@ function shrink(file,cb){ const img=new Image(), u=URL.createObjectURL(file); im
   const dev=el("div",{class:"card",id:"pf_devCard"},el("label",{class:"q",text:"อุปกรณ์ที่ใช้ลงทะเบียนซิม"}),
     el("div",{class:"opts eq"},...["มือถือ","แท็บเล็ต"].map(v=>el("label",{},el("input",{type:"radio",name:"pf_dev",value:v}),v))),
     el("div",{class:"two",style:"margin-top:8px"},el("div",{},el("label",{class:"q sm",for:"pf_devBrand",text:"แบรนด์"}),el("input",{type:"text",id:"pf_devBrand",placeholder:"เช่น Samsung"})),el("div",{},el("label",{class:"q sm",for:"pf_devModel",text:"รุ่น"}),el("input",{type:"text",id:"pf_devModel",placeholder:"เช่น Galaxy A15"}))));
-  const ph=el("div",{class:"card"},el("label",{class:"q",text:"ถ่ายรูปไว้ตอบทีหลัง"}));
+  const ph=el("div",{class:"card"},el("label",{class:"q",text:"รูปสำหรับส่วนที่ 2"}));
   PF_SHOOT.forEach(([k,t])=>{ const inp=el("input",{type:"file",id:"pfp_"+k,accept:"image/*",capture:"environment"}), th=el("img",{class:"thumb",id:"pft_"+k,alt:""});
     inp.addEventListener("change",e=>{ const f=e.target.files[0]; if(!f) return; S.files[k]=f; shrink(f,d=>{ if(!d) return; S.pfPhotos[k]=d; th.src=d; th.style.display="block"; }); });
     ph.append(el("div",{class:"phrow"},el("div",{class:"small",text:t}),inp,th)); });
   b.append(hrs, qCard(PF_NEED,"pf_"), dev, ph,
-    el("div",{class:"card ro"},el("div",{class:"rot",text:`ส่วนที่ 2 (${N_LATER} ข้อ) จะไปอยู่ในแท็บรอกรอก`}),el("div",{class:"small",text:`ดูจากรูป ${N_PHOTO} ข้อ`+(DEP_TXT?` (+ ${DEP_TXT} ถ้าร้านมีสื่อ)`:"")+` · ประเมินผู้ขาย ${N_LATER-N_PHOTO} ข้อ — ควรกรอกภายในวันนี้`})));
+    el("div",{class:"card ro"},el("div",{class:"rot",text:`ส่วนที่ 2 · ${N_LATER} ข้อ · กรอกภายในวันนี้`})));
   document.querySelector('.page[data-p="checkin"]').append(b);
 })();
 function pfAnswers(){ const a={open:val("pf_open")||null,close:val("pf_close")||null,off:checks("pf_off")}; Object.assign(a,qAnswers([PF_NEED],"pf_"));
@@ -819,9 +858,9 @@ function needProfile(){ if(!S||!S.prof) return false; if(S.isNew) return radio("
   if(S.prof.pend) return false; return S.prof.due||!!($("#profUpd")&&$("#profUpd").checked); }
 function renderProfCard(){ const c=$("#profCard"); if(!S||S.isNew){ c.style.display="none"; return; } const P=S.prof, keep=$("#profUpd")&&$("#profUpd").checked; c.style.display="block"; c.innerHTML="";
   c.append(el("label",{class:"q",text:"โปรไฟล์ร้าน"}));
-  if(P.pend) c.append(el("div",{class:"status warn",style:"margin-top:0",text:`ส่วนที่ 2 ยังค้างในแท็บรอกรอก (เยี่ยมเมื่อ ${fmtDT(P.pend.visitAt)}) — ครั้งนี้ไม่ต้องถามโปรไฟล์`}));
-  else if(!P.prev) c.append(el("div",{class:"status warn",style:"margin-top:0",text:`ยังไม่มีโปรไฟล์ — ถาม 3 ข้อด้านล่าง (ไม่บังคับ) ที่เหลือ ${N_LATER} ข้อกรอกทีหลังในแท็บรอกรอก`}));
-  else if(P.due) c.append(el("div",{class:"status warn",style:"margin-top:0",text:`ครบรอบทวนโปรไฟล์ (อัปเดตล่าสุด ${fmtD(P.prev.at)}) — ดึงคำตอบเดิมมาให้แล้ว แก้เฉพาะข้อที่เปลี่ยน`}));
+  if(P.pend) c.append(el("div",{class:"status warn",style:"margin-top:0",text:`ส่วนที่ 2 ยังค้าง (เยี่ยม ${fmtDT(P.pend.visitAt)})`}));
+  else if(!P.prev) c.append(el("div",{class:"status warn",style:"margin-top:0",text:"ยังไม่มีโปรไฟล์"}));
+  else if(P.due) c.append(el("div",{class:"status warn",style:"margin-top:0",text:`ครบรอบทวน · ล่าสุด ${fmtD(P.prev.at)}`}));
   else { c.append(el("div",{class:"status ok",style:"margin-top:0",text:`อัปเดตล่าสุด ${fmtD(P.prev.at)} · ทวนครั้งถัดไป ${fmtD(P.next)}`}));
     const cb=el("input",{type:"checkbox",id:"profUpd"}); cb.checked=!!keep; c.append(el("div",{class:"opts",style:"margin-top:8px"},el("label",{},cb,"อัปเดตโปรไฟล์ครั้งนี้ด้วย"))); } }
 function renderProfBlock(){ const b=$("#profBlock"); if(!S) return; const pg=document.querySelector(`.page[data-p="${S.isNew?"reg":"checkin"}"]`);
@@ -846,22 +885,23 @@ function savePending(vid){ // after submit: queue the later part
 let homeTab="near";
 function setHomeTab(t){ homeTab=t; $$("#homeTabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t));
   $("#nearPane").style.display=t==="near"?"block":"none"; $("#pendPane").style.display=t==="pend"?"block":"none"; $(".homeBottom").style.display=t==="near"?"flex":"none"; $("#focus").style.display=t==="near"?"block":"none";
+  if(t!=="near") setMode(false);
   if(t==="pend") renderPending(); else if(map) setTimeout(()=>map.invalidateSize(),50); }
 function pendCount(){ let o=0; try{ o=outbox().length; }catch(e){} const n=Object.keys(pendings()).length+o; $("#pendN").textContent=n; $("#pendN").style.display=n?"inline-flex":"none"; }
 function renderPending(){ const box=$("#pendList"), all=Object.values(pendings()).sort((a,b)=>a.visitAt<b.visitAt?-1:1); box.innerHTML=""; pendCount();
-  $("#pendHead").textContent=all.length?`ค้างกรอก ${all.length} ร้าน — เรียงจากที่ค้างนานสุด`:"ไม่มีร้านค้างกรอก";
+  $("#pendHead").textContent=all.length?`ค้างกรอก ${all.length} ร้าน`:"ไม่มีร้านค้างกรอก";
   all.forEach(p=>{ const hrs=(Date.now()-new Date(p.visitAt).getTime())/36e5, late=hrs>24, nph=Object.keys(p.photos||{}).length;
     const b=el("button",{class:"scard",type:"button"});
     b.append(el("div",{class:"sc1"},el("div",{},el("div",{class:"sname",text:p.name}),el("div",{class:"smeta",text:`เยี่ยมเมื่อ ${fmtDT(p.visitAt)}`})),
       el("span",{class:"chip"+(late?" late":""),text:late?"ค้างเกิน 1 วัน":`ค้าง ${N_LATER} ข้อ`})),
-      el("div",{class:"small",style:"margin-top:6px",text:nph?`มีรูป ${nph}/${PF_PHOTOS.length} (รวมรูปหน้าร้าน)`:(p.photosDropped?"รูปเก็บไม่ได้ (พื้นที่เครื่องเต็ม) — ตอบจากความจำ":"ไม่มีรูป — ตอบจากความจำ")}));
+      el("div",{class:"small",style:"margin-top:6px",text:nph?`มีรูป ${nph}/${PF_PHOTOS.length} (รวมรูปหน้าร้าน)`:(p.photosDropped?"รูปเก็บไม่ได้ (พื้นที่เครื่องเต็ม)":"ไม่มีรูป")}));
     b.addEventListener("click",()=>openLater(p.key)); box.append(b); }); }
 let LP=null;
 function openLater(key){ LP=pendings()[key]; if(!LP) return; const w=$("#laterBody"); w.innerHTML=""; $("#lTitle").textContent=LP.name;
   w.append(el("div",{class:"small",style:"margin-bottom:10px",text:`เยี่ยมเมื่อ ${fmtDT(LP.visitAt)}`+(LP.prev?" · ทวนโปรไฟล์ คำตอบเดิมเลือกไว้ให้แล้ว":"")}));
   PF_LATER.forEach(sec=>{ w.append(el("h3",{class:"sec",text:sec.sec}));
     if(sec.sec==="ดูจากรูป"){ const g=el("div",{class:"phgrid"}); PF_PHOTOS.forEach(([k,t])=>{ const d=LP.photos&&LP.photos[k];
-      const im=d?el("img",{src:d,alt:t,title:"แตะเพื่อขยาย"}):el("div",{class:"noph",text:"ไม่มีรูป"}); if(d) im.addEventListener("click",()=>im.classList.toggle("zoom"));
+      const im=d?el("img",{src:d,alt:t}):el("div",{class:"noph",text:"ไม่มีรูป"}); if(d) im.addEventListener("click",()=>im.classList.toggle("zoom"));
       g.append(el("figure",{},im,el("figcaption",{text:t}))); }); w.append(g); }
     sec.qs.forEach(q=>w.append(qCard(q,"pl_"))); });
   if(LP.prev) qFill(PQ_LATER,"pl_",LP.prev); showView("later"); }
@@ -873,10 +913,10 @@ function saveLater(){ if(!qValidate(PQ_LATER,"pl_")){ const b=document.querySele
     shown:{nano_cluster:LP.area&&LP.area.nn?LP.area.nn.id:null,true_share_nn:LP.area&&LP.area.nn?LP.area.nn.v:null,true_share_hb:LP.area?LP.area.hb:null}};
   out.visit_id=LP.vid||null; const name=LP.name; LP=null; pendCount(); const btn=$("#btnLaterSave"); btn.disabled=true;
   let st="sent"; api({action:"profile",profile:out}).then(r=>{ if(!r.ok) throw new Error(r.error); }).catch(()=>{ st=queue({body:{action:"profile",profile:out},at:done}); })
-    .finally(()=>{ btn.disabled=false; showDone(st==="sent"?"บันทึกโปรไฟล์แล้ว":"บันทึกไว้ในเครื่อง",[name,st==="sent"?"ส่งเข้าระบบแล้ว "+fmtDT(new Date()):"ยังส่งไม่ได้ — ระบบจะส่งให้อัตโนมัติเมื่อมีสัญญาณ"],out,st==="sent"); }); }
+    .finally(()=>{ btn.disabled=false; showDone(st==="sent"?"บันทึกโปรไฟล์แล้ว":"บันทึกไว้ในเครื่อง",[name,st==="sent"?"ส่งแล้ว "+fmtDT(new Date()):"ยังไม่ได้ส่ง · ส่งเองเมื่อมีสัญญาณ"],out,st==="sent"); }); }
 function showDone(title,lines,data,ok=true,next=null){ $("#mTitle").textContent=title; const m=$(".okmark"); m.textContent=ok?"✓":"!"; m.classList.toggle("wait",!ok); const b=$("#mBody"); b.innerHTML=""; lines.filter(Boolean).forEach((t,i)=>b.append(el("div",{class:i?"small":"mname",text:t})));
   const nb=$("#btnPart2"), hb=$("#btnHome"); nb.style.display=next?"block":"none"; nb.dataset.k=next||"";
-  hb.className=next?"btn":"btn pri"; hb.textContent=next?"ไว้กรอกทีหลัง (อยู่ในแท็บรอกรอก)":"กลับหน้าร้านรอบตัว"; $("#modal").classList.add("on"); }
+  hb.className=next?"btn":"btn pri"; hb.textContent=next?"ไว้ทีหลัง":"กลับหน้าร้านรอบตัว"; $("#modal").classList.add("on"); }
 
 pendCount();
 
@@ -953,13 +993,13 @@ function payload(){
 function renderSummary(){
   const P=payload(),box=$("#summary"); box.innerHTML="";
   const sec=(t,rows)=>{rows=rows.filter(r=>r[1]!==undefined); if(!rows.length)return; box.append(el("h3",{text:t})); const dl=el("dl",{class:"kv"}); rows.forEach(([k,v])=>dl.append(el("dt",{text:k}),el("dd",{text:(v==null||v==="")?"–":String(v)}))); box.append(dl);};
-  sec("การเยี่ยม",[["ผู้กรอก",P.filler],["ร้าน",P.store_name+(P.store_id?` (${P.store_id})`:"")],["พิกัด",P.gps?`${P.gps.lat}, ${P.gps.lon}`+(P.gps.src==="จำลอง"?" (จำลอง)":""):"–"],["รูปหน้าร้าน",P.photos.front?P.photos.front.name:"–"]]);
+  sec("การเยี่ยม",[["ผู้กรอก",P.filler],["ร้าน",P.store_name+(P.store_id?` (${P.store_id})`:"")],["พิกัด",P.gps?`${P.gps.lat}, ${P.gps.lon}`+(P.gps.src==="ตั้งเอง"?" (ตั้งเอง)":""):"–"],["รูปหน้าร้าน",P.photos.front?P.photos.front.name:"–"]]);
   if(P.new_store) sec("ร้านใหม่",[["เจ้าของร้าน",P.new_store.owner_name],["เบอร์โทร",P.new_store.phone],["ขายซิม true",P.new_store.sells_true],["ผลการชวน",P.new_store.recruit_result??undefined],["เหตุผล",P.new_store.recruit_reason??undefined]]);
   if(P.checks) sec("ข้อมูลที่ยืนยัน",[["ยืนยันพิกัด",P.checks.gps_confirmed==null?undefined:(P.checks.gps_confirmed?"ยืนยันแล้ว":"ยังไม่ยืนยัน")],["ร้านซ้ำ?",P.checks.dup_answer??undefined],["เจ้าของร้าน",P.checks.owner_name??undefined],["เบอร์โทร",P.checks.phone??undefined]]);
   if(P.problems) sec("ปัญหาที่พบ",[].concat(P.no_problem?[["ผล","ไม่พบปัญหา"]]:[["รูปประกอบ",(P.photos.problems||[]).length+" รูป"]].concat(P.problems.map(x=>[x.problem,[x.result?x.result+(x.result==="ต้องส่งต่อ"&&(x.escalate_to||x.urgency)?` → ${x.escalate_to||"–"}${x.urgency?` (${x.urgency})`:""}`:""):null,x.detail,x.reorder_qty!=null?`สั่งเพิ่ม ${x.reorder_qty} ซิม`:null].filter(Boolean).join(" · ")]))));
   if(P.competitors){ const c=P.competitors, f=o=>[o.sims_per_month!=null?`${o.sims_per_month.toLocaleString()} ซิม/เดือน`:null,o.typical_pack_baht!=null?`แพ็ก ${o.typical_pack_baht.toLocaleString()} บาท`:null].filter(Boolean).join(" · ")||"ไม่ได้ระบุตัวเลข";
     sec("คู่แข่ง",[["ค่ายที่ขาย",c.carriers.map(x=>x==="ไม่มี"?(notSell()?"ไม่ได้ขายซิม":"ไม่ขายค่ายอื่น"):x).join(", ")],["AIS",c.ais?f(c.ais):undefined],["ค่ายอื่น",c.other?((c.other.name?c.other.name+" · ":"")+f(c.other)):undefined],["ขายดีสุด",c.best_seller??undefined]]); }
-  if(P.profile){ const a=P.profile.answers; sec("โปรไฟล์ร้าน — ถามที่ร้าน ("+P.profile.review+")",[["เวลาเปิด–ปิด",hoursTxt(a)],["ปิดวัน",(a.off||[]).join(" ")],[PF_NEED.q,ansTxt(a,"need")],["อุปกรณ์ลงทะเบียน",devTxt(a)],["รูปที่ถ่าย",P.profile.photos.filter(k=>k!=="front").length+"/"+PF_SHOOT.length],["ส่วนที่ 2",`${N_LATER} ข้อ — กรอกต่อได้ทันทีหลังกดส่ง หรือเก็บไว้ในแท็บรอกรอก`]]); }
+  if(P.profile){ const a=P.profile.answers; sec("โปรไฟล์ร้าน — ถามที่ร้าน ("+P.profile.review+")",[["เวลาเปิด–ปิด",hoursTxt(a)],["ปิดวัน",(a.off||[]).join(" ")],[PF_NEED.q,ansTxt(a,"need")],["อุปกรณ์ลงทะเบียน",devTxt(a)],["รูปที่ถ่าย",P.profile.photos.filter(k=>k!=="front").length+"/"+PF_SHOOT.length],["ส่วนที่ 2",`${N_LATER} ข้อ`]]); }
   if(P.campaign) sec("แคมเปญ",[["แคมเปญ",P.campaign.name],["สื่อที่ร้าน",P.campaign.materials],["ร้านเข้าใจ",P.campaign.store_understands],["ลูกค้าตอบรับ",P.campaign.customer_response],["ความเห็น",P.campaign.feedback]]);
 }
 async function submit(){ const btn=$("#btnNext"); if(btn.dataset.busy) return; btn.dataset.busy="1"; btn.disabled=true; btn.textContent="กำลังส่ง…";
@@ -968,8 +1008,8 @@ async function submit(){ const btn=$("#btnNext"); if(btn.dataset.busy) return; b
   let st="sent"; try{ const r=await api({action:"visit",visit:P,photos}); if(!r.ok) throw new Error(r.error||"error"); }catch(e){ st=queue({body:{action:"visit",visit:P,photos},at:P.time_out}); }
   delete btn.dataset.busy; btn.disabled=false; progress(); pendCount(); outCount();
   showDone(st==="sent"?"ส่งแล้ว":"บันทึกไว้ในเครื่อง",[P.store_name+(P.store_id?` (${P.store_id})`:""),
-    st==="sent"?"ส่งเข้าระบบแล้ว "+fmtDT(new Date()):"ยังส่งไม่ได้ — เก็บไว้ในเครื่อง ระบบจะส่งให้อัตโนมัติเมื่อมีสัญญาณ"+(st==="nophotos"?" (รูปเก็บไม่ได้ เพราะพื้นที่เครื่องเต็ม)":""),
-    P.profile?(pk?`โปรไฟล์ส่วนที่ 2 (${N_LATER} ข้อ) — กรอกต่อเลย หรือเก็บไว้ในแท็บรอกรอก`:"เก็บโปรไฟล์ส่วนที่ 2 ไว้ในเครื่องไม่ได้ (พื้นที่เครื่องเต็ม)"):null],P,st==="sent",pk); }
+    st==="sent"?"ส่งแล้ว "+fmtDT(new Date()):"ยังไม่ได้ส่ง · ส่งเองเมื่อมีสัญญาณ"+(st==="nophotos"?" (รูปเก็บไม่ได้ เพราะพื้นที่เครื่องเต็ม)":""),
+    P.profile?(pk?`ส่วนที่ 2 · ${N_LATER} ข้อ`:"เก็บโปรไฟล์ส่วนที่ 2 ไว้ในเครื่องไม่ได้ (พื้นที่เครื่องเต็ม)"):null],P,st==="sent",pk); }
 $("#btnPart2").addEventListener("click",()=>{ const k=$("#btnPart2").dataset.k; $("#modal").classList.remove("on"); pendCount(); if(k&&pendings()[k]) openLater(k); else showView("home"); });
 $("#btnHome").addEventListener("click",()=>{$("#modal").classList.remove("on");showView("home"); pendCount(); if(homeTab==="pend") renderPending();});
 
@@ -1013,7 +1053,7 @@ const outbox=()=>{ try{ return JSON.parse(load(OUTKEY)||"[]")||[]; }catch(e){ re
 const setOutbox=a=>{ try{ localStorage.setItem(OUTKEY,JSON.stringify(a)); return true; }catch(e){ return false; } };
 function queue(item){ const a=outbox(); a.push(item); if(setOutbox(a)){ outCount(); return "queued"; }
   item.body.photos=[]; item.photosDropped=true; a[a.length-1]=item; const ok=setOutbox(a); outCount(); return ok?"nophotos":"fail"; }
-function outCount(){ const n=outbox().length; $("#outCard").style.display=n?"block":"none"; $("#outTxt").textContent=`ค้างส่งเข้าระบบ ${n} รายการ — ส่งให้อัตโนมัติเมื่อมีสัญญาณ`;
+function outCount(){ const n=outbox().length; $("#outCard").style.display=n?"block":"none"; $("#outTxt").textContent=`รอส่ง ${n} รายการ`;
   $("#pendN").textContent=Object.keys(pendings()).length+n; $("#pendN").style.display=(Object.keys(pendings()).length+n)?"inline-flex":"none"; }
 let flushing=false;
 async function flushOutbox(){ if(flushing||!API||!PIN) return; flushing=true; const b=$("#btnFlush"); b.disabled=true;
@@ -1046,11 +1086,11 @@ async function boot(){ // the PIN is checked by the server every time (internet 
 $("#btnPin").addEventListener("click",()=>{ const v=$("#pinIn").value.trim(); if(!/^\d{6}$/.test(v)){ $("#pinMsg").className="stmsg bad-t"; $("#pinMsg").textContent="ใส่ตัวเลข 6 หลัก"; return; } PIN=v; boot(); });
 /* idle 2 h -> clear whatever is half-filled, forget the name, lock (pending part-2 items and the outbox stay) */
 const IDLE_MS=2*36e5; let lastAct=Date.now();
-function idleCheck(){ if(PIN&&Date.now()-lastAct>IDLE_MS){ lockApp("ไม่ได้ใช้งานเกิน 2 ชม. — ล้างแบบฟอร์มที่ค้างไว้แล้ว ใส่รหัสอีกครั้ง"); return true; } return false; }
+function idleCheck(){ if(PIN&&Date.now()-lastAct>IDLE_MS){ lockApp("หมดเวลา 2 ชม. — ใส่รหัสใหม่"); return true; } return false; }
 function touch(){ if(idleCheck()) return; lastAct=Date.now(); }
 ["pointerdown","keydown","input","touchstart"].forEach(t=>document.addEventListener(t,touch,{capture:true,passive:true}));
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) idleCheck(); }); window.addEventListener("focus",idleCheck); setInterval(idleCheck,60000);
-function lockApp(msg){ PIN=""; FILLER=""; LP=null; try{ resetForm(); }catch(e){} S=null; cur=null; tpClose(); $("#modal").classList.remove("on"); gate(msg||""); }
+function lockApp(msg){ try{ closePin(); setMode(false); }catch(e){} focusId=null; hoverId=null; PIN=""; FILLER=""; LP=null; try{ resetForm(); }catch(e){} S=null; cur=null; tpClose(); $("#modal").classList.remove("on"); gate(msg||""); }
 $("#btnLogout").addEventListener("click",()=>lockApp("ออกจากระบบแล้ว")); $("#btnLogout2").addEventListener("click",()=>lockApp("ออกจากระบบแล้ว"));
 $("#pinIn").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#btnPin").click(); });
 /* ---------- boot ---------- */
@@ -1065,7 +1105,7 @@ function startCheck(){
   clearTimeout(stTimer); stTimer=setTimeout(()=>{ done(); stShow("ยังหาตำแหน่งไม่ได้ — ตรวจว่าเปิด GPS และอนุญาตตำแหน่งให้เบราว์เซอร์แล้ว","bad-t",true); },15000);
   navigator.geolocation.getCurrentPosition(p=>{ done(); simMode=false;
       const q={lat:p.coords.latitude,lon:p.coords.longitude,acc:p.coords.accuracy,src:"GPS"};
-      if(q.acc>100){ pending=q; stShow(`สัญญาณ GPS ยังไม่แม่น (คลาดเคลื่อน ±${Math.round(q.acc)} ม.) — ออกไปที่โล่งแล้วลองอีกครั้ง หรือใช้ตำแหน่งนี้ต่อ`,"warn",true,true); return; }
+      if(q.acc>100){ pending=q; stShow(`GPS คลาดเคลื่อน ±${Math.round(q.acc)} ม.`,"warn",true,true); return; }
       pending=q; enterHome(); },
     e=>{ done(); stShow("หาตำแหน่งไม่ได้: "+(e.code===1?"ไม่ได้รับอนุญาตให้ใช้ตำแหน่ง":e.message),"bad-t",true); },
     {enableHighAccuracy:true,timeout:15000,maximumAge:0});
@@ -1073,7 +1113,7 @@ function startCheck(){
 $("#btnStart").addEventListener("click",startCheck);
 $("#btnRetry").addEventListener("click",startCheck);
 $("#btnUseAnyway").addEventListener("click",()=>enterHome());
-$("#btnSim").addEventListener("click",()=>{ pending=null; enterHome(); fallback("โหมดจำลอง — แตะบนแผนที่เพื่อตั้งตำแหน่ง"); });
+$("#btnSim").addEventListener("click",()=>{ pending=null; enterHome(); setTimeout(()=>setMode(true),80); });
 boot();
 </script>
 </body>
