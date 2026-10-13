@@ -85,6 +85,7 @@ h2.sec:first-child{margin-top:0}
 #left{container-type:inline-size}
 .tiles{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px;margin-bottom:12px}
 .tiles.t3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.tiles.t2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .tiles.t4{grid-template-columns:repeat(4,minmax(0,1fr))}
 .tile .d{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tile .d b{font-weight:500;color:var(--ink)}
@@ -108,7 +109,7 @@ h2.sec:first-child{margin-top:0}
 .mtab td span{font-size:11px;color:var(--ink2);font-weight:400;margin-left:4px}
 .mtab td b{font-size:15px}
 @container (max-width:520px){
-  .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}.tiles .tile.wide{grid-column:1/-1}.tiles.t4{grid-template-columns:repeat(2,minmax(0,1fr))}.tile .v{font-size:20px}
+  .tiles{grid-template-columns:repeat(3,minmax(0,1fr))}.tiles .tile.wide{grid-column:1/-1}.tiles.t4,.tiles.t2{grid-template-columns:repeat(2,minmax(0,1fr))}.tile .v{font-size:20px}
   .pyr{grid-template-columns:1fr 1fr}.pyr .glab,.pyr .capsp{display:none}.mtab{display:table}
 }
 .tile{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
@@ -161,7 +162,7 @@ table.t tr.on td{background:var(--brass-soft)}
 .slist .wcard{padding:8px 12px}
 /* charts */
 .chart{position:relative;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:10px 12px}
-.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart svg{display:block;overflow:visible}
 .tip{position:fixed;z-index:4000;pointer-events:none;background:var(--ink);color:#fff;border-radius:8px;padding:6px 10px;font-size:12px;line-height:1.4;display:none;max-width:260px}
 .tip b{font-size:14px;font-weight:600}
 .hbar{display:grid;grid-template-columns:minmax(90px,38%) 1fr 44px;gap:8px;align-items:center;font-size:13px;margin:3px 0}
@@ -323,7 +324,7 @@ function analyse(s){
   if(pr===1){ const k=s.f.includes("dup")?"data":((s.s==="ร้านใหม่"||s.f.includes("new"))?"new":"drop");
     R.push({t:1,k,why:k==="drop"?(GO[s.g9]>GO[s.g8]?`เกรดตก ${s.g8==="ไม่มียอด"?"–":s.g8} → ${s.g9}`:`${LASTM} ไม่มียอด`):(k==="new"?"ร้านใหม่ — ยังไม่ยืนยันข้อมูล":"ข้อมูลร้านอาจซ้ำ"),
     act:k==="drop"?"ถามสาเหตุที่ยอดลด · เช็กสต็อกซิมและโปรที่ร้านใช้":(k==="new"?"ยืนยันข้อมูลร้าน (เจ้าของ เบอร์ พิกัด) ในแอป":"ตรวจว่าเป็นร้านเดียวกับ "+s.dupw)}); }
-  if(s.s==="inactive"&&s.lastSale) R.push({t:2,k:"stop",why:`เพิ่งหยุดขาย — มียอดล่าสุด ${s.lastSale}`,act:"ถามสาเหตุที่หยุด และชวนกลับมาขาย"});
+  if(s.s==="inactive"&&s.lastSale) R.push({t:2,k:"stop",why:`หยุดขาย — มียอดล่าสุด ${s.lastSale}`,act:"ถามสาเหตุที่หยุด และชวนกลับมาขาย"});
   const cyc=CYC[s.g9]; if(cyc>0&&s.s!=="inactive"){ const dd=days(s.last); if(dd==null||dd>cyc) R.push({t:3,k:"cycle",why:dd==null?"ยังไม่เคยเยี่ยม":`ไม่ได้เยี่ยม ${dd} วัน`,act:s.act}); }
   s.R=R; s.tier=R.length?Math.min(...R.map(r=>r.t)):9; s.todo=R.length>0;
   s.key=(s.n+"|"+s.id+"|"+s.c+"|"+s.ad+"|"+s.o+"|"+s.t+"|"+s.a).toLowerCase().replace(/\s+/g,"");
@@ -421,7 +422,7 @@ function rOverview(L,list){
   const act=list.filter(s=>s.s==="ขายอยู่").length, ina=list.filter(s=>s.s==="inactive").length, nw=list.filter(s=>s.s==="ร้านใหม่").length;
   const todo=list.filter(s=>s.todo), done=todo.filter(s=>s.done), drop=list.filter(s=>!s.done&&s.R.some(r=>r.k==="drop")), stop=list.filter(s=>!s.done&&s.R.some(r=>r.k==="stop")), op=list.reduce((a,s)=>a+s.openP.length,0);
   decide(el("span",{},B(`${LASTM} GA ${fmt(last)}`),` (${sg(dm)} จาก ${MONTHS[n-2]})`),`${QTXT()} ${sg(qd)}`+(anyF()&&PROV_QP!=null?` (ทั้งจังหวัด ${sg(PROV_QP)})`:""),
-    B(`ต้องเข้าก่อน ${todo.length-done.length} ร้าน`),`เกรดตก/ไม่มียอด ${drop.length} · เพิ่งหยุดขาย ${stop.length}`+(op?` · ปัญหาค้าง ${op}`:""));
+    B(`ต้องเข้าก่อน ${todo.length-done.length} ร้าน`),`เกรดตก/ไม่มียอด ${drop.length} · หยุดขาย ${stop.length}`+(op?` · ปัญหาค้าง ${op}`:""));
   L.append(el("div",{class:"tiles"},
       el("div",{class:"tile wide"},el("div",{class:"k",text:"ร้านทั้งหมด"}),el("div",{class:"v",text:fmt(list.length)}),
         el("div",{class:"d"},"ขายอยู่ ",B(fmt(act))," · inactive ",B(fmt(ina))," · ร้านใหม่ ",B(fmt(nw)))),
@@ -429,23 +430,20 @@ function rOverview(L,list){
       tile("ต้องเข้าก่อน",fmt(todo.length-done.length),`เยี่ยมแล้ว ${fmt(done.length)} ร้าน`),
       tile("ปัญหาค้าง",fmt(op),op?"รอแก้":"–")));
   L.append(gradeCard(list));
-  L.append(el("h2",{class:"sec",text:`GA รายเดือน ${MONTHS[0]}–${LASTM}`}), barChart(MONTHS,t,{hl:n-1,unit:"ซิม",note:`เฉลี่ย ${fmt(r1(t.reduce((a,b)=>a+b,0)/n))} ต่อเดือน`}));
+  L.append(el("h2",{class:"sec",text:`GA รายเดือน ${MONTHS[0]}–${LASTM}`}), barChart(MONTHS,t,{hl:n-1,unit:"ซิม",all:true}));
   const up=list.filter(s=>GO[s.g9]<GO[s.g8]).length, dn=list.filter(s=>GO[s.g9]>GO[s.g8]).length;
   L.append(el("h2",{class:"sec",text:`การเปลี่ยนเกรด ${MONTHS[n-2]} → ${LASTM}`}),
-    el("div",{class:"tiles t3"},tile("เกรดขึ้น",fmt(up)),tile("เกรดตก",fmt(dn)),tile("คงที่",fmt(list.length-up-dn))));
+    el("div",{class:"tiles t2"},tile("เกรดขึ้น",fmt(up)),tile("เกรดตก",fmt(dn))));
   // by district with benchmark + next action
   const g={}; list.forEach(s=>{ (g[s.a||"(ไม่ระบุ)"]=g[s.a||"(ไม่ระบุ)"]||[]).push(s); });
   const provIna=pctOf(ST.filter(s=>s.s==="inactive").length,ST.length);
-  const rows=Object.entries(g).map(([a,ss])=>{ const tt=totM(ss), q=qDelta(ss), ia=pctOf(ss.filter(s=>s.s==="inactive").length,ss.length), dr=ss.filter(s=>s.R.some(r=>r.k==="drop")&&!s.done).length, st=ss.filter(s=>s.R.some(r=>r.k==="stop")&&!s.done).length, td=ss.filter(s=>s.todo&&!s.done).length;
-    let nx; if(q!=null&&PROV_QP!=null&&q<PROV_QP-5) nx=`ยอดลดแรงกว่าจังหวัด — เข้าร้านเกรดตก/ไม่มียอด ${dr} ร้านก่อน`;
-    else if(ia!=null&&provIna!=null&&ia>provIna+10) nx=`ร้าน inactive สูงกว่าจังหวัด — ชวนร้านที่เพิ่งหยุด ${st} ร้านกลับมาขาย`;
-    else if(q!=null&&PROV_QP!=null&&q>PROV_QP+5) nx="โตกว่าจังหวัด — ดูว่าอะไรได้ผลแล้วขยายไปพื้นที่อื่น";
-    else nx=td?`ตามรอบปกติ — ต้องเข้า ${td} ร้าน`:"ตามรอบปกติ";
+  const rows=Object.entries(g).map(([a,ss])=>{ const tt=totM(ss), q=qDelta(ss), ia=pctOf(ss.filter(s=>s.s==="inactive").length,ss.length), td=ss.filter(s=>s.todo&&!s.done).length;
+    const nx=td?`ต้องเข้าก่อน ${td} ร้าน`:null;
     return {a,n:ss.length,ia,last:tt[tt.length-1],q,td,nx}; }).sort((x,y)=>y.last-x.last);
   const tb=el("tbody");
   rows.forEach(r=>tb.append(el("tr",{class:"click"+((F.a===r.a||(F.a==="__na"&&r.a==="(ไม่ระบุ)"))?" on":""),onclick:()=>{ const v=r.a==="(ไม่ระบุ)"?"__na":r.a; F.a=F.a===v?"":v; buildFilters(); render(); fitFiltered(); }},
-    el("td",{},el("div",{text:r.a}),el("div",{class:"nx",text:r.nx})),el("td",{class:"n",text:fmt(r.n)}),el("td",{class:"n",text:r.ia==null?"–":r.ia+"%"}),el("td",{class:"n",text:fmt(r.last)}),
-    el("td",{class:"n "+(r.q!=null&&PROV_QP!=null?(r.q<PROV_QP?"dn":"up"):""),text:sg(r.q)}),el("td",{class:"n",text:fmt(r.td)}))));
+    el("td",{},el("div",{text:r.a}),r.nx?el("div",{class:"nx",text:r.nx}):null),el("td",{class:"n",text:fmt(r.n)}),el("td",{class:"n",text:r.ia==null?"–":r.ia+"%"}),el("td",{class:"n",text:fmt(r.last)}),
+    el("td",{class:"n",text:sg(r.q)}),el("td",{class:"n",text:fmt(r.td)}))));
   if(!anyF()||F.a) tb.append(el("tr",{class:"bench"},el("td",{text:"ทั้งจังหวัด"}),el("td",{class:"n",text:fmt(ST.length)}),el("td",{class:"n",text:provIna+"%"}),el("td",{class:"n",text:fmt(totM(ST)[n-1])}),el("td",{class:"n",text:sg(PROV_QP)}),el("td",{class:"n",text:fmt(ST.filter(s=>s.todo&&!s.done).length)})));
   L.append(el("h2",{class:"sec",text:"รายอำเภอ"}), el("div",{class:"tw"},el("table",{class:"t"},el("thead",{},el("tr",{},el("th",{text:"อำเภอ"}),el("th",{class:"n",text:"ร้าน"}),el("th",{class:"n",text:"inactive"}),el("th",{class:"n",text:"GA "+LASTM}),el("th",{class:"n",text:QTXT()}),el("th",{class:"n",text:"ต้องเข้า"}))),tb)));
 }
@@ -455,9 +453,9 @@ let todoK="", hideDone=true, todoShow=60;
 function rTodo(L,list){
   const all=list.filter(s=>s.todo), open=all.filter(s=>!s.done), c=k=>open.filter(s=>s.R.some(r=>r.k===k)).length;
   const cycSet=["A","B","C"].some(g=>CYC[g]>0);
-  decide(B(`ต้องเข้าก่อน ${open.length} ร้าน`),`มีปัญหาค้าง ${c("prob")}`,`เกรดตก/ไม่มียอด ${c("drop")}`,`ร้านใหม่/ตรวจซ้ำ ${c("new")+c("data")}`,`เพิ่งหยุดขาย ${c("stop")}`,
+  decide(B(`ต้องเข้าก่อน ${open.length} ร้าน`),`มีปัญหาค้าง ${c("prob")}`,`เกรดตก/ไม่มียอด ${c("drop")}`,`ร้านใหม่/ตรวจซ้ำ ${c("new")+c("data")}`,`หยุดขาย ${c("stop")}`,
     cycSet?`เกินรอบเยี่ยม ${c("cycle")}`:"ยังไม่ได้กำหนดรอบเยี่ยม", `เยี่ยมแล้ว ${all.length-open.length} ร้าน`);
-  const KS=[["","ทั้งหมด"],["prob","ปัญหาค้าง"],["drop","เกรดตก/ไม่มียอด"],["new","ร้านใหม่"],["data","ตรวจซ้ำ"],["stop","เพิ่งหยุดขาย"],["cycle","เกินรอบ"]];
+  const KS=[["","ทั้งหมด"],["prob","ปัญหาค้าง"],["drop","เกรดตก/ไม่มียอด"],["new","ร้านใหม่"],["data","ตรวจซ้ำ"],["stop","หยุดขาย"],["cycle","เกินรอบ"]];
   const sw=el("div",{class:"seg",style:"flex-wrap:wrap;max-width:100%"},...KS.map(([k,t])=>el("button",{type:"button",class:todoK===k?"on":"",text:t,onclick:()=>{ todoK=k; todoShow=60; render(); }})));
   const cb=el("input",{type:"checkbox"}); cb.checked=hideDone; cb.addEventListener("change",()=>{ hideDone=cb.checked; render(); });
   L.append(el("div",{style:"display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px"},sw,el("label",{class:"small",style:"display:flex;gap:6px;align-items:center;cursor:pointer"},cb,"ซ่อนร้านที่เยี่ยมแล้ว")));
@@ -483,16 +481,16 @@ function rOwners(L,list){
     return {n:ss.length,act:pctOf(ss.filter(s=>s.s==="ขายอยู่").length,ss.length),last:tt[tt.length-1],q:qDelta(ss),td:td.length,dn,cov:td.length?pctOf(dn,td.length):null,op:ss.reduce((a,s)=>a+s.openP.length,0),
       drop:ss.filter(s=>s.R.some(r=>r.k==="drop")&&!s.done).length,ab:ss.filter(s=>(s.g9==="A"||s.g9==="B")).length}; };
   const own=Object.keys(grp).filter(k=>k!=="__none").map(k=>({k,...stat(grp[k])})), team=stat(list.filter(s=>s.o)), none=grp.__none?stat(grp.__none):null;
-  own.forEach(r=>{ r.nx=r.op?`ตามปัญหาค้าง ${r.op} เรื่อง`:(r.q!=null&&team.q!=null&&r.q<team.q-5?`ยอดลดกว่าทีม — เข้าร้านเกรดตก/ไม่มียอด ${r.drop} ร้านก่อน`:(r.td-r.dn>0?`เยี่ยมร้านต้องเข้าที่เหลือ ${r.td-r.dn} ร้าน`:"รักษาระดับ — ดูแลร้าน A/B")); });
+  const nxOf=r=>r.td-r.dn>0?`ต้องเข้าก่อน ${r.td-r.dn} ร้าน`:null; own.forEach(r=>{ r.nx=nxOf(r); });
   own.sort((a,b)=>(a.q??0)-(b.q??0));
   const worst=own[0];
   decide(B(`RSR/COM ${own.length} คน ดูแล ${fmt(team.n)} ร้าน`),none?B(`ไม่มีผู้ดูแล ${fmt(none.n)} ร้าน (GA ${LASTM} ${fmt(none.last)}) — ต้องมอบหมาย`):null,
     worst&&worst.q!=null?`ยอดลดมากสุด: ${worst.k} ${sg(worst.q)} (ทีม ${sg(team.q)})`:null);
   const tb=el("tbody"), row=(name,r,cls,nx,click)=>el("tr",{class:(click?"click ":"")+(cls||""),onclick:click},el("td",{},el("div",{text:name}),nx?el("div",{class:"nx",text:nx}):null),
-    el("td",{class:"n",text:fmt(r.n)}),el("td",{class:"n",text:r.act==null?"–":r.act+"%"}),el("td",{class:"n",text:fmt(r.last)}),el("td",{class:"n "+(r.q!=null&&team.q!=null&&r!==team?(r.q<team.q?"dn":"up"):""),text:sg(r.q)}),
+    el("td",{class:"n",text:fmt(r.n)}),el("td",{class:"n",text:r.act==null?"–":r.act+"%"}),el("td",{class:"n",text:fmt(r.last)}),el("td",{class:"n",text:sg(r.q)}),
     el("td",{class:"n",text:`${fmt(r.dn)}/${fmt(r.td)}`}),el("td",{class:"n",text:fmt(r.op)}));
   own.forEach(r=>tb.append(row(r.k,r,F.o===r.k?"on":"",r.nx,()=>{ F.o=F.o===r.k?"":r.k; buildFilters(); render(); fitFiltered(); })));
-  if(none) tb.append(row("(ไม่มีผู้ดูแล)",none,"flag",`มอบหมายผู้ดูแล — เริ่มจากร้านเกรด A/B ${none.ab} ร้าน`,()=>{ F.o=F.o==="__none"?"":"__none"; buildFilters(); render(); fitFiltered(); }));
+  if(none) tb.append(row("(ไม่มีผู้ดูแล)",none,"flag",nxOf(none),()=>{ F.o=F.o==="__none"?"":"__none"; buildFilters(); render(); fitFiltered(); }));
   tb.append(row("เฉลี่ยทีม",team,"bench",null,null));
   L.append(el("h2",{class:"sec",text:"ผลรายคน"}),el("div",{class:"tw"},el("table",{class:"t"},el("thead",{},el("tr",{},el("th",{text:"ผู้ดูแล"}),el("th",{class:"n",text:"ร้าน"}),el("th",{class:"n",text:"ขายอยู่"}),el("th",{class:"n",text:"GA "+LASTM}),el("th",{class:"n",text:QTXT()}),el("th",{class:"n",text:"เยี่ยมแล้ว/ต้องเข้า"}),el("th",{class:"n",text:"ปัญหาค้าง"}))),tb)));
   // who filled the forms (anyone can fill)
@@ -588,18 +586,23 @@ function rStore(L,list){
 }
 
 /* ================= SVG bar chart (single series, hover tooltip) ================= */
-function barChart(labels,vals,o={}){ const W=560,H=200,pl=8,pr=8,pt=22,pb=26, n=vals.length, mx=Math.max(1,...vals)*1.12, bw=Math.min(24,(W-pl-pr)/n*.55), step=(W-pl-pr)/n;
-  const NS="http://www.w3.org/2000/svg", sv=document.createElementNS(NS,"svg"), mk=(t,a)=>{ const e=document.createElementNS(NS,t); for(const k in a) e.setAttribute(k,a[k]); return e; };
-  sv.setAttribute("viewBox",`0 0 ${W} ${H}`); sv.setAttribute("role","img"); sv.setAttribute("aria-label",o.unit||"chart");
-  [0,.5,1].forEach(f=>{ const y=pt+(H-pt-pb)*(1-f); sv.append(mk("line",{x1:pl,x2:W-pr,y1:y,y2:y,stroke:"#e9ecea","stroke-width":1})); });
-  vals.forEach((v,i)=>{ const x=pl+step*i+step/2, h=(H-pt-pb)*(v/mx), y=H-pb-h, hl=i===o.hl;
-    const r=Math.min(4,bw/2,h/2), d=h>0?`M${x-bw/2},${H-pb} V${y+r} Q${x-bw/2},${y} ${x-bw/2+r},${y} H${x+bw/2-r} Q${x+bw/2},${y} ${x+bw/2},${y+r} V${H-pb} Z`:"";
-    if(d) sv.append(mk("path",{d,fill:hl?"#e1251b":"#9aa1a9"}));
-    const t=mk("text",{x,y:H-8,"text-anchor":"middle","font-size":11,fill:"#5f6670"}); t.textContent=labels[i]; sv.append(t);
-    if(hl||v===Math.max(...vals)){ const tv=mk("text",{x,y:y-6,"text-anchor":"middle","font-size":12,"font-weight":hl?600:400,fill:"#1d2125"}); tv.textContent=fmt(v); sv.append(tv); }
-    const hit=mk("rect",{x:pl+step*i,y:pt-10,width:step,height:H-pt-pb+10,fill:"transparent",tabindex:0}); const show=e=>{ const p=i?vals[i-1]:null; tipShow(e,[el("b",{text:fmt(v)+" "+(o.unit||"")}),el("div",{text:labels[i]+(p?` · ${sg(r1((v/p-1)*100))} จากก่อนหน้า`:"")})]); };
-    hit.addEventListener("pointermove",show); hit.addEventListener("focus",e=>show({clientX:e.target.getBoundingClientRect().x,clientY:e.target.getBoundingClientRect().y})); hit.addEventListener("pointerleave",tipHide); hit.addEventListener("blur",tipHide); sv.append(hit); });
-  return el("div",{class:"chart"},sv,o.note?el("div",{class:"small",text:o.note}):null); }
+function barChart(labels,vals,o={}){ const wrap=el("div",{class:"chart"}); let lastW=0;
+  const draw=()=>{ if(!wrap.isConnected){ if(ro&&lastW) ro.disconnect(); return; } const W=Math.round(wrap.clientWidth-24); if(W<120||W===lastW) return; lastW=W; wrap.innerHTML="";
+    const H=220,pl=4,pr=4,pt=24,pb=26, n=vals.length, mx=Math.max(1,...vals)*1.12, step=(W-pl-pr)/n, bw=Math.min(48,step*.55);
+    const NS="http://www.w3.org/2000/svg", sv=document.createElementNS(NS,"svg"), mk=(t,a)=>{ const e=document.createElementNS(NS,t); for(const k in a) e.setAttribute(k,a[k]); return e; };
+    sv.setAttribute("viewBox",`0 0 ${W} ${H}`); sv.setAttribute("width",W); sv.setAttribute("height",H); sv.setAttribute("role","img"); sv.setAttribute("aria-label",o.unit||"chart");
+    [0,.5,1].forEach(f=>{ const y=pt+(H-pt-pb)*(1-f); sv.append(mk("line",{x1:pl,x2:W-pr,y1:y,y2:y,stroke:"#e9ecea","stroke-width":1})); });
+    const top=Math.max(...vals), longest=Math.max(...vals.map(v=>fmt(v).length)), short=o.all&&step<longest*7.8+6; // narrow screen: 31.1k instead of 31,085
+    vals.forEach((v,i)=>{ const x=pl+step*i+step/2, h=(H-pt-pb)*(v/mx), y=H-pb-h, hl=i===o.hl;
+      const rr=Math.min(4,bw/2,h/2), d=h>0?`M${x-bw/2},${H-pb} V${y+rr} Q${x-bw/2},${y} ${x-bw/2+rr},${y} H${x+bw/2-rr} Q${x+bw/2},${y} ${x+bw/2},${y+rr} V${H-pb} Z`:"";
+      if(d) sv.append(mk("path",{d,fill:hl?"#e1251b":"#9aa1a9"}));
+      const t=mk("text",{x,y:H-8,"text-anchor":"middle","font-size":12,fill:"#5f6670"}); t.textContent=labels[i]; sv.append(t);
+      if(o.all||hl||v===top){ const tv=mk("text",{x,y:y-6,"text-anchor":"middle","font-size":13,"font-weight":hl?600:400,fill:"#1d2125"}); tv.textContent=short&&v>=1000?(Math.round(v/100)/10).toLocaleString("th-TH")+"k":fmt(v); sv.append(tv); }
+      const hit=mk("rect",{x:pl+step*i,y:pt-10,width:step,height:H-pt-pb+10,fill:"transparent",tabindex:0}); const show=e=>{ const pv=i?vals[i-1]:null; tipShow(e,[el("b",{text:fmt(v)+" "+(o.unit||"")}),el("div",{text:labels[i]+(pv?` · ${sg(r1((v/pv-1)*100))} จากก่อนหน้า`:"")})]); };
+      hit.addEventListener("pointermove",show); hit.addEventListener("focus",e=>show({clientX:e.target.getBoundingClientRect().x,clientY:e.target.getBoundingClientRect().y})); hit.addEventListener("pointerleave",tipHide); hit.addEventListener("blur",tipHide); sv.append(hit); });
+    wrap.append(sv); if(o.note) wrap.append(el("div",{class:"small",text:o.note})); };
+  const ro=typeof ResizeObserver!=="undefined"?new ResizeObserver(draw):null; if(ro) ro.observe(wrap); else setTimeout(draw,0);
+  return wrap; }
 function tipShow(e,nodes){ const t=$("#tip"); t.innerHTML=""; nodes.forEach(n=>t.append(n)); t.style.display="block"; const x=Math.min(e.clientX+14,window.innerWidth-t.offsetWidth-8), y=Math.max(8,e.clientY-t.offsetHeight-10); t.style.left=x+"px"; t.style.top=y+"px"; }
 function tipHide(){ $("#tip").style.display="none"; }
 
