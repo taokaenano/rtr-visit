@@ -215,10 +215,9 @@ table.t tr.on td{background:var(--brass-soft)}
       <button class="iconbtn" id="btnLogout" type="button" title="ออกจากระบบ">ออก</button></div>
     <div class="tabs" id="tabs">
       <button data-t="ov" class="on" type="button">ภาพรวม</button>
-      <button data-t="todo" type="button">ต้องเข้าก่อน<b id="todoN"></b></button>
+      <button data-t="shop" type="button">ร้าน<b id="todoN"></b></button>
       <button data-t="own" type="button">RSR/COM</button>
       <button data-t="vis" type="button">ผลเยี่ยม</button>
-      <button data-t="store" type="button">รายร้าน</button>
     </div>
     <div class="fstrip" id="fstrip"></div>
     <div class="decide" id="decide"></div>
@@ -269,7 +268,7 @@ $("#btnPin").addEventListener("click",()=>{ const v=$("#pinIn").value.trim(); if
 $("#pinIn").addEventListener("keydown",e=>{ if(e.key==="Enter") $("#btnPin").click(); });
 $("#btnReload").addEventListener("click",()=>load(false));
 const IDLE_MS=2*36e5; let lastAct=Date.now();
-function lock(msg){ PIN=""; D=null; closePan(); closeCard(); DRT=""; gate(msg,false); }
+function lock(msg){ PIN=""; D=null; closePan(); closeCard(); DRT=""; Object.keys(TF).forEach(k=>delete TF[k]); fLoad(null); SEL=null; gate(msg,false); }
 function idleCheck(){ if(PIN&&Date.now()-lastAct>IDLE_MS){ lock("หมดเวลา 2 ชม. — ใส่รหัสใหม่"); return true; } return false; }
 ["pointerdown","keydown","wheel","touchstart"].forEach(t=>document.addEventListener(t,()=>{ if(!idleCheck()) lastAct=Date.now(); },{capture:true,passive:true}));
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) idleCheck(); }); window.addEventListener("focus",idleCheck); setInterval(idleCheck,60000);
@@ -369,15 +368,20 @@ document.addEventListener("click",e=>{ if(!e.target.closest("#fpan")) closePan()
 window.addEventListener("resize",()=>{ if(!$("#fpan").contains(document.activeElement)) closePan(); sizeMain(); });
 
 /* ================= tabs + render ================= */
-$("#tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; setTab(b.dataset.t); });
-function setTab(t){ TAB=t; $$("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t)); render(); $("#left").scrollTop=0; }
+$("#tabs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; if(b.dataset.t==="shop") SEL=null; setTab(b.dataset.t); });
+const TF={}; // each tab keeps its own filters
+const fCopy=()=>({a:F.a,o:F.o,g:new Set(F.g),s:new Set(F.s),ty:F.ty,q:F.q});
+function fLoad(x){ F.a=x?x.a:""; F.o=x?x.o:""; F.g=new Set(x?x.g:[]); F.s=new Set(x?x.s:[]); F.ty=x?x.ty:""; F.q=x?x.q:""; }
+function setTab(t){ const old=fCopy(); TF[TAB]=old; if(t!==TAB) fLoad(TF[t]); TAB=t; $$("#tabs button").forEach(b=>b.classList.toggle("on",b.dataset.t===t)); buildFilters(); render(); $("#left").scrollTop=0;
+  if(old.a!==F.a||old.o!==F.o) fitFiltered(); }
 $("#mvseg").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; document.body.classList.toggle("mapmode",b.dataset.m==="map"); $$("#mvseg button").forEach(x=>x.classList.toggle("on",x===b)); if(map) setTimeout(()=>{ map.invalidateSize(); if(b.dataset.m==="map"&&!mobFit){ mobFit=true; fitFiltered(); } },60); });
 let mobFit=false;
 function sizeMain(){ const h=$("#mast").getBoundingClientRect().height; document.documentElement.style.setProperty("--hh",h+"px"); if(map) setTimeout(()=>map.invalidateSize(),60); }
 function render(){ if(!D) return; const list=FS(); if(CARD&&!list.some(s=>s.id===CARD)) closeCard(); $("#fclr").style.display=anyF()?"inline":"none";
-  const todo=list.filter(s=>s.todo&&!s.done); $("#todoN").textContent=todo.length||""; $("#todoN").style.display=todo.length?"inline":"none";
+  let shopList=list; if(TAB!=="shop"){ const keep=fCopy(); fLoad(TF.shop); shopList=FS(); fLoad(keep); }
+  const todo=shopList.filter(s=>s.todo&&!s.done); $("#todoN").textContent=todo.length||""; $("#todoN").style.display=todo.length?"inline":"none";
   const L=$("#left"); L.innerHTML="";
-  ({ov:rOverview,todo:rTodo,own:rOwners,vis:rVisits,store:rStore})[TAB](L,list); drawMap(list); sizeMain(); }
+  ({ov:rOverview,shop:rShop,own:rOwners,vis:rVisits})[TAB](L,list); drawMap(list); sizeMain(); }
 function decide(...parts){ const d=$("#decide"); d.innerHTML=""; parts.filter(Boolean).forEach((p,i)=>{ if(i) d.append(" · "); d.append(typeof p==="string"?p:p); }); }
 const B=t=>el("b",{text:t});
 /* grade pyramid: share of stores (up) vs share of GA (down), latest month, with change vs previous month */
@@ -432,7 +436,16 @@ function rOverview(L,list){
 }
 
 /* ---------- tab 2: must-visit worklist ---------- */
-let todoK="", hideDone=true, todoShow=60;
+let todoK="", hideDone=true, todoShow=60, SHOPM="todo";
+function rShop(L,list){ if(SEL&&BYID[SEL]) return rStore(L,list);
+  const open=list.filter(s=>s.todo&&!s.done);
+  L.append(el("div",{class:"seg",style:"margin-bottom:10px"},...[["todo",`ต้องเข้าก่อน ${fmt(open.length)}`],["all",`ทั้งหมด ${fmt(list.length)}`]].map(([k,t])=>el("button",{type:"button",class:SHOPM===k?"on":"",text:t,onclick:()=>{ SHOPM=k; todoShow=60; render(); }}))));
+  if(SHOPM==="todo") return rTodo(L,list);
+  decide(B(`ร้าน ${fmt(list.length)} ร้าน`));
+  const rows=list.slice().sort((a,b)=>a.tier-b.tier||a.n.localeCompare(b.n,"th"));
+  if(!rows.length){ L.append(el("div",{class:"empty",text:"ไม่พบร้าน"})); return; }
+  rows.slice(0,todoShow).forEach(x=>L.append(wcard(x)));
+  if(rows.length>todoShow) L.append(el("button",{class:"btn more",type:"button",text:`แสดงเพิ่ม (${rows.length-todoShow})`,onclick:()=>{ todoShow+=60; render(); }})); }
 function rTodo(L,list){
   const all=list.filter(s=>s.todo), open=all.filter(s=>!s.done), c=k=>open.filter(s=>s.R.some(r=>r.k===k)).length;
   const cycSet=["A","B","C"].some(g=>CYC[g]>0);
@@ -571,17 +584,10 @@ function showCard(id){ const s=BYID[id]; if(!s) return; const c=$("#mcard"); c.i
 function closeCard(){ const c=$("#mcard"); if(c){ c.classList.remove("on"); c.innerHTML=""; } if(CARD) hover(CARD,false); CARD=null; $$("#drill tr.on[data-id]").forEach(t=>t.classList.remove("on")); }
 
 /* ---------- tab 5: store ---------- */
-let storeQ="";
-function openStore(id){ closeCard(); SEL=id; storeQ=""; setTab("store"); const s=BYID[id]; if(s&&s.okxy&&map){ map.setView([s.lat,s.lon],Math.max(map.getZoom(),15)); hover(id,true); }
+function openStore(id){ closeCard(); SEL=id; setTab("shop"); const s=BYID[id]; if(s&&s.okxy&&map){ map.setView([s.lat,s.lon],Math.max(map.getZoom(),15)); hover(id,true); }
   if(document.body.classList.contains("mapmode")) $("#mvseg button[data-m=list]").click(); }
 function rStore(L,list){
   const s=SEL&&BYID[SEL];
-  const inp=el("input",{class:"fsearch",type:"search",style:"width:100%;margin-bottom:10px",placeholder:"ค้นหา",value:storeQ});
-  if(!s){ decide(B(`รายร้าน ${fmt(list.length)} ร้าน`));
-    const box=el("div",{class:"slist"}); const draw=()=>{ const q=inp.value.toLowerCase().replace(/\s+/g,""); storeQ=inp.value; box.innerHTML="";
-      const r=list.filter(x=>!q||x.key.includes(q)).sort((a,b)=>a.tier-b.tier||a.n.localeCompare(b.n,"th")); r.slice(0,50).forEach(x=>box.append(wcard(x,true)));
-      if(r.length>50) box.append(el("div",{class:"small",style:"text-align:center",text:`50 จาก ${r.length} ร้าน`})); if(!r.length) box.append(el("div",{class:"empty",text:"ไม่พบร้าน"})); };
-    inp.addEventListener("input",draw); L.append(inp,box); draw(); return; }
   const r=s.R.slice().sort((a,b)=>a.t-b.t)[0];
   decide(B(s.n),r?r.why:"ไม่เร่งด่วน","→ "+(r?r.act:s.act));
   L.append(el("button",{class:"btn sm",type:"button",text:"← รายชื่อร้าน",style:"margin-bottom:10px",onclick:()=>{ SEL=null; render(); }}));
@@ -648,7 +654,7 @@ function buildMap(){ if(typeof L==="undefined"){ $("#legend").textContent="โ�
     const ls=$("#lens"); Object.entries(LENSES).forEach(([k,v])=>ls.append(el("button",{type:"button","data-l":k,text:v.t,class:k===LENS?"on":"",onclick:()=>{ LENS=k; $$("#lens button").forEach(b=>b.classList.toggle("on",b.dataset.l===k)); if(k==="share"&&!lay.hb){ lay.hb=true; autoHB=true; } else if(k!=="share"&&autoHB){ lay.hb=false; autoHB=false; } drawMap(FS()); }}))); }
   Object.values(MK).forEach(m=>m.remove()); MK={};
   ST.forEach(s=>{ if(!s.okxy) return; const m=L.circleMarker([s.lat,s.lon],{renderer:cv,radius:6,weight:1.5,color:"#ffffff",fillOpacity:.95});
-    m.bindTooltip(()=>tipHtml(s),{direction:"top",offset:[0,-6],opacity:1}); m.on("mouseover",()=>hover(s.id,true,true)); m.on("mouseout",()=>hover(s.id,false,true)); m.on("click",()=>openStore(s.id)); MK[s.id]=m; });
+    m.bindTooltip(()=>tipHtml(s),{direction:"top",offset:[0,-6],opacity:1}); m.on("mouseover",()=>hover(s.id,true,true)); m.on("mouseout",()=>hover(s.id,false,true)); m.on("click",()=>showCard(s.id)); MK[s.id]=m; });
   if(hbLayer) hbLayer.remove(); hbLayer=L.layerGroup(HB.map(h=>L.circleMarker([h[0],h[1]],{renderer:cv,radius:3,weight:0,fillColor:lvl(h[2]),fillOpacity:.55}).bindTooltip(()=>el("div",{},el("div",{text:"Happy Block · Nano Cluster "+h[3]}),el("div",{text:"true "+(+h[2]).toFixed(1)+"%"})),{direction:"top"})));
   if(vLayer) vLayer.remove(); vLayer=L.layerGroup(V.filter(v=>v.lat!=null&&v.lon!=null).map(v=>L.circleMarker([v.lat,v.lon],{renderer:cv,radius:4,weight:2,color:"#1d2125",fillColor:"#ffffff",fillOpacity:1}).bindTooltip(()=>el("div",{},el("div",{text:"จุดที่ไปเยี่ยม · "+(v.name||v.sid)}),el("div",{text:fmtD(v.at)+" · "+(v.filler||"")})),{direction:"top"})));
 }
