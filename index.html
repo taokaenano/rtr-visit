@@ -640,7 +640,7 @@ async function tryPin(){ pinBusy=true; const ph=$("#pinHead"); ph.classList.add(
   else if(r.err==="net") pinMsg("เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง",true);
   else pinMsg("ระบบขัดข้อง ลองใหม่อีกครั้ง",true); }
 async function loadData(fromPin){
-  try{ const d=await api({action:"data"},25000);
+  try{ const d=await api({action:"data"},70000);
     if(!d||!d.ok) return {ok:false,err:d&&d.error,wait:d&&d.wait_s};
     initData(d); OFFLINE=false; IDB.set("data",d); return {ok:true}; }
   catch(e){ // no signal: use the copy kept on this phone, only for a code this phone already opened today
@@ -1362,7 +1362,10 @@ setInterval(tryReload,30000);
 
 /* ================= start ================= */
 (async function start(){ const a=getAuth(); const idle=Date.now()-lastAct>IDLE_MS;
-  if(a&&!idle){ PIN=a.pin; pinVal="______"; drawSlots(); showGate(""); $("#pinHead").classList.add("pbusy"); pinMsg("กำลังโหลดข้อมูล");
+  if(a&&!idle){ PIN=a.pin;
+    const c=await IDB.get("data"); if(c&&c.stores){ initData(c); touch(true); enterApp();   // open at once on the copy kept on this phone, then refresh
+      loadData(false).then(r=>{ if(r.ok&&CUR==="home") renderHome(); }); return; }
+    pinVal="______"; drawSlots(); showGate(""); $("#pinHead").classList.add("pbusy"); pinMsg("กำลังโหลดข้อมูล");
     const r=await loadData(false); $("#pinHead").classList.remove("pbusy");
     if(r.ok){ touch(true); enterApp(); return; } PIN="";
     showGate(r.err==="net"?"เชื่อมต่อไม่ได้ ลองใหม่อีกครั้ง":(r.err==="locked"?"":"ใส่รหัสใหม่"),r.err==="net"); if(r.err==="locked") setLock(r.wait||300); return; }
