@@ -454,7 +454,7 @@ async function load(first){ if(loading) return; loading=true; const my=SESS;
   if(first) {}
   else rlState("busy"," กำลังโหลด…");
   const keepScroll=$("#left").scrollTop;
-  try{ const d=await Promise.race([api({action:"dash"}),new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),30000))]);
+  try{ const d=await Promise.race([api({action:"dash"}),new Promise((_,rej)=>setTimeout(()=>rej(new Error("timeout")),70000))]);
     if(my!==SESS) return; // locked meanwhile: drop the answer
     if(!d.ok){ if(first||d.error==="bad_pin"||d.error==="need_admin"||d.error==="locked"){ PIN=""; gate(d.error==="need_admin"?"รหัสนี้เปิดได้แค่แอป ใส่รหัสผู้ดูแลระบบ":(d.error==="bad_pin"?"รหัสไม่ถูกต้อง ลองใหม่อีกครั้ง":(d.error==="locked"?"":"ระบบขัดข้อง ลองใหม่อีกครั้ง"))); if(d.error==="locked") setLock(d.wait_s||300); } else rlState("err"," โหลดไม่ได้"); return; }
     init(d); if(first){ $$(".view").forEach(v=>v.classList.toggle("on",v.id==="app")); lastAct=Date.now(); }
