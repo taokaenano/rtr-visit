@@ -22,10 +22,10 @@ button{font-family:inherit}
 #gate.on{display:flex;flex-direction:column;max-width:460px;margin:0 auto;min-height:100vh}
 .ph{background:var(--brass);color:#fff;border-radius:0 0 28px 28px;padding:20px 24px 26px;flex:1;display:flex;flex-direction:column}
 .ph .top1{display:flex;align-items:center;gap:10px;font-weight:600;font-size:19px}
-.ph .ask{margin-top:auto;padding-top:40px}.ph h1{font-weight:500;font-size:26px;line-height:1.25;margin:0}
-.slots{display:flex;gap:10px;margin-top:26px}.sim{flex:1;max-width:50px}.sim svg{display:block;width:100%;height:auto;overflow:visible}
+.ph .ask{margin-top:auto;padding-top:40px;text-align:center}.ph h1{font-weight:500;font-size:26px;line-height:1.25;margin:0}
+.slots{display:flex;justify-content:center;gap:10px;margin-top:26px}.sim{flex:1;max-width:50px}.sim svg{display:block;width:100%;height:auto;overflow:visible}
 .sim .body{fill:transparent;stroke:rgba(255,255,255,.5);stroke-width:2;transition:stroke .15s}.sim.cur .body,.sim.on .body,.perr .sim .body{stroke:#fff}
-.sim .chip{transform-origin:25px 38px;transform:scale(.4);opacity:0;transition:transform .18s cubic-bezier(.3,1.4,.5,1),opacity .12s}.sim.on .chip{opacity:1;transform:scale(1)}
+.sim .chip{transform-origin:24.5px 33.5px;transform:scale(.4);opacity:0;transition:transform .18s cubic-bezier(.3,1.4,.5,1),opacity .12s}.sim.on .chip{opacity:1;transform:scale(1)}
 .chip rect{fill:#c9b98f}.chip path{stroke:#a8976b;stroke-width:1.4;fill:none}.perr .chip rect{fill:#f3b4ae}.perr .chip path{stroke:#d9776f}
 .pbusy .sim.on .chip{animation:pulse 1s ease-in-out infinite}@keyframes pulse{50%{opacity:.35}}
 .pmsg{min-height:24px;margin-top:16px;font-size:15px;color:rgba(255,255,255,.88)}.pmsg.bad{color:#fff;font-weight:500}
@@ -438,7 +438,7 @@ var PIN="";
 async function api(body){ if(!API) throw new Error("no api"); const r=await fetch(API,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({...body,pin:PIN,dev:DEV})}); if(!r.ok) throw new Error("http "+r.status); return r.json(); }
 let pinVal="", pinBusy=false, lockTill=0, lockTimer=null;
 function drawSlots(){ const w=$("#slots"); w.innerHTML=""; for(let i=0;i<6;i++){ const d=el("div",{class:"sim"+(i<pinVal.length?" on":"")+(i===pinVal.length?" cur":"")}); const sv=document.createElementNS("http://www.w3.org/2000/svg","svg"); sv.setAttribute("viewBox","0 0 50 64");
-  sv.innerHTML='<path class="body" d="M7 1h27l15 15v40a7 7 0 0 1-7 7H7a7 7 0 0 1-7-7V8a7 7 0 0 1 7-7z"/><g class="chip"><rect x="13" y="29" width="24" height="19" rx="3.5"/><path d="M13 38.5h24M21 29v19M29 29v19"/></g>'; d.append(sv); w.append(d); } }
+  sv.innerHTML='<path class="body" d="M7 1h27l15 15v40a7 7 0 0 1-7 7H7a7 7 0 0 1-7-7V8a7 7 0 0 1 7-7z"/><g class="chip"><rect x="12.5" y="24" width="24" height="19" rx="3.5"/><path d="M12.5 33.5h24M20.5 24v19M28.5 24v19"/></g>'; d.append(sv); w.append(d); } }
 (()=>{ const pad=$("#pad"); ["1","2","3","4","5","6","7","8","9","","0","del"].forEach(k=>{ const b=el("button",{class:"key"+(k===""?" blank":""),type:"button"}); if(k==="del"){ b.append(ic("backspace")); b.setAttribute("aria-label","ลบ"); } else b.textContent=k; b.addEventListener("click",()=>pinKey(k)); pad.append(b); }); drawSlots(); })();
 document.addEventListener("keydown",e=>{ if(!$("#gate").classList.contains("on")) return; if(/^\d$/.test(e.key)) pinKey(e.key); else if(e.key==="Backspace") pinKey("del"); });
 function pinKey(k){ if(pinBusy||Date.now()<lockTill) return; $("#pinHead").classList.remove("perr"); if(k==="del"){ pinVal=pinVal.slice(0,-1); $("#pinMsg").textContent=""; } else if(k&&pinVal.length<6) pinVal+=k; drawSlots();

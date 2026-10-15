@@ -33,14 +33,14 @@ svg.i.s{width:18px;height:18px}
 .ph .top1{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .mark{display:flex;align-items:center;gap:10px;font-weight:600;font-size:19px;letter-spacing:-.2px}
 .ph .asof{font-size:13px;color:rgba(255,255,255,.82)}
-.ph .ask{margin-top:auto;padding-top:40px}
+.ph .ask{margin-top:auto;padding-top:40px;text-align:center}
 .ph h1{font-weight:500;font-size:26px;line-height:1.25}
-.slots{display:flex;gap:10px;margin-top:26px}
+.slots{display:flex;justify-content:center;gap:10px;margin-top:26px}
 .sim{flex:1;max-width:50px}
 .sim svg{display:block;width:100%;height:auto;overflow:visible}
 .sim .body{fill:transparent;stroke:rgba(255,255,255,.5);stroke-width:2;transition:stroke .15s}
 .sim.cur .body,.sim.on .body,.perr .sim .body{stroke:#fff}
-.sim .chip{transform-origin:25px 38px;transform:scale(.4);opacity:0;transition:transform .18s cubic-bezier(.3,1.4,.5,1),opacity .12s}
+.sim .chip{transform-origin:24.5px 33.5px;transform:scale(.4);opacity:0;transition:transform .18s cubic-bezier(.3,1.4,.5,1),opacity .12s}
 .sim.on .chip{opacity:1;transform:scale(1)}
 .chip rect{fill:var(--chip)}.chip path{stroke:var(--chip-line);stroke-width:1.4;fill:none}
 .perr .chip rect{fill:#f3b4ae}.perr .chip path{stroke:#d9776f}
@@ -108,6 +108,7 @@ h3.sec{font-size:17px;font-weight:600;margin:20px 2px 10px}
 .act.due::before{background:var(--red)}
 .lastv{font-size:13px;color:var(--ink2);margin-top:4px}
 .sbtns{display:flex;gap:8px;margin-top:12px}
+.sc .hist{margin-top:10px}.sc .kpi{margin-top:10px;padding-top:10px;border-top:1px solid var(--line2)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:1px solid var(--line);background:var(--card);border-radius:12px;padding:0 16px;min-height:var(--tap);font-size:15px;white-space:nowrap;text-decoration:none;color:var(--ink)}
 .btn:active{background:var(--line2)}
 .btn.pri{background:var(--red);border-color:var(--red);color:#fff;font-weight:500}.btn.pri:active{background:var(--red-d)}
@@ -618,7 +619,7 @@ let pinVal="", pinBusy=false, lockTill=0, lockTimer=null, CUR="gate", unlockTo=n
 const getAuth=()=>{ const a=lsj(LSK.auth,null); if(!a||!a.pin||!a.exp||a.exp<Date.now()){ if(a) lss(LSK.auth,null); return null; } return a; };
 function drawSlots(){ const w=$("#slots"); w.innerHTML="";
   for(let i=0;i<6;i++) w.append(el("div",{class:"sim"+(i<pinVal.length?" on":"")+(i===pinVal.length?" cur":"")},(()=>{ const s=document.createElementNS("http://www.w3.org/2000/svg","svg"); s.setAttribute("viewBox","0 0 50 64"); s.setAttribute("aria-hidden","true");
-    s.innerHTML='<path class="body" d="M7 1h27l15 15v40a7 7 0 0 1-7 7H7a7 7 0 0 1-7-7V8a7 7 0 0 1 7-7z"/><g class="chip"><rect x="13" y="29" width="24" height="19" rx="3.5"/><path d="M13 38.5h24M21 29v19M29 29v19"/></g>'; return s; })())); }
+    s.innerHTML='<path class="body" d="M7 1h27l15 15v40a7 7 0 0 1-7 7H7a7 7 0 0 1-7-7V8a7 7 0 0 1 7-7z"/><g class="chip"><rect x="12.5" y="24" width="24" height="19" rx="3.5"/><path d="M12.5 33.5h24M20.5 24v19M28.5 24v19"/></g>'; return s; })())); }
 function pinMsg(t,bad){ const m=$("#pinMsg"); m.textContent=t||""; m.className="pmsg"+(bad?" bad":""); }
 (function buildPad(){ const pad=$("#pad");
   ["1","2","3","4","5","6","7","8","9","","0","del"].forEach(k=>{ const b=el("button",{class:"key"+(k===""?" blank":""),type:"button"});
@@ -756,7 +757,9 @@ function card(s){ const c=el("div",{class:"sc"+(s.cat==="S"?" dim":""),"data-id"
   c.append(el("div",{class:"h",onclick:()=>openStore(s)},el("div",{},el("div",{class:"sn",text:s.n}),el("div",{class:"sm num",text:meta})),gBadge(s)));
   const pw=pillsEl(s); if(pw) c.append(pw);
   c.append(el("div",{class:"act"+(s.due?" due":""),text:s.act}));
+  const nt=s.R.some(r=>r.k==="low")?rxNormTxt(s,LASTM):null; if(nt) c.append(el("div",{class:"lastv",text:nt}));
   const lt=lastTxt(s); if(lt) c.append(el("div",{class:"lastv",text:lt}));
+  c.append(histStrip(s),kpiBlock(s));
   c.append(el("div",{class:"sbtns"},el("button",{class:"btn pri",type:"button",onclick:()=>startVisit(s)},"เยี่ยม"),navBtn(s),planBtn(s)));
   return c; }
 
