@@ -81,6 +81,7 @@ svg.i.s{width:18px;height:18px}
 .loc{display:flex;align-items:center;gap:8px;margin:10px 2px 0;font-size:13px;color:var(--ink2);min-height:32px}
 .loc .ib{width:var(--tap);height:var(--tap);margin-left:auto}
 .sum1{margin:2px 2px 10px;font-size:14px}.sum1 b{font-weight:600}
+.sumrow{display:flex;align-items:center;gap:10px;margin-bottom:10px}.sumrow .sum1{flex:1;min-width:0;margin:0 2px}.sumrow .btn{padding:0 12px;flex:none}
 .resume{display:flex;align-items:center;gap:10px;background:var(--warn-soft);border:1px solid #efd59b;border-radius:var(--r);padding:10px 12px;margin:10px 0}
 .resume div{flex:1;min-width:0}.resume .t{font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.resume .s{font-size:13px;color:var(--warn)}
 h3.sec{font-size:17px;font-weight:600;margin:20px 2px 10px}
@@ -438,7 +439,7 @@ input.tp{cursor:pointer;caret-color:transparent}
 <script>
 "use strict";
 /* RTR Visit — field app r21 */
-const APP_VER="r21c";
+const APP_VER="r21d";
 const API="https://script.google.com/macros/s/AKfycbysDARyiBpYsW6Yp1m7xrIEMn5x2uMsMC80Alwy33porWmMCsIhqvWTL1gV5rbhqkwwfw/exec";
 /* ===== shared by the field app (RTR Visit) and the dashboard (RTR Visit Dashboard) — same rules everywhere ===== */
 const rxName=t=>String(t||"").trim().replace(/^คุณ\s*/,"").replace(/\s+/g,"").toLowerCase(); // a person: ignore "คุณ", spaces and case
@@ -897,11 +898,14 @@ function togglePlan(id){ const p=getPlan(); const i=p.ids.indexOf(id);
     if(s&&s.pin&&pinIds.length){ let bd=1e18; for(let k=0;k<=pinIds.length;k++){ const a=k>0?BYID[pinIds[k-1]]:null, b=k<pinIds.length?BYID[pinIds[k]]:null; const d=(a?pd(a,s):0)+(b?pd(s,b):0)-(a&&b?pd(a,b):0); if(d<bd){ bd=d; at=k; } } }
     if(s&&s.pin){ const rest=p.ids.filter(x=>!pinIds.includes(x)); pinIds.splice(at,0,id); p.ids=pinIds.concat(rest); } else p.ids.push(id); }
   savePlan(p); toast(i>=0?"เอาออกจากแผนแล้ว":"เพิ่มในแผนแล้ว",1600); }
+function clearPlanAsk(){ const n=getPlan().ids.length; if(!n) return;
+  askSheet("ล้างแผนวันนี้",`ทั้งหมด ${n} ร้าน`,[{t:"ล้างทั้งหมด",cls:"btn danger",icon:"trash",fn:()=>{ savePlan({day:today(),ids:[],manual:false}); if(HV.tab==="plan") renderPlan(); toast("ล้างแผนแล้ว",1600); }},{t:"ยกเลิก",cls:"btn"}]); }
 let planMap=null, planLayer=null;
 function renderPlan(){ const box=$("#panePlan"); box.innerHTML=""; const p=getPlan(), ss=p.ids.map(id=>BYID[id]).filter(Boolean);
   if(!ss.length){ box.append(el("div",{class:"empty"},el("div",{text:"ยังไม่มีร้านในแผน"}),el("button",{class:"btn",type:"button",style:"margin-top:12px",onclick:()=>setTab("shops")},ic("search","s"),"เลือกร้าน"))); destroyPlanMap(); return; }
   const pin=ss.filter(s=>s.pin), vis=ss.filter(visitedToday).length;
-  box.append(el("div",{class:"sum1"},el("b",{text:`${ss.length} ร้าน`}),` · ระยะรวมประมาณ ${fmtDist(pathLen(pin))}${vis?` · เยี่ยมแล้ว ${vis}`:""}`));
+  box.append(el("div",{class:"sumrow"},el("div",{class:"sum1"},el("b",{text:`${ss.length} ร้าน`}),` · ระยะรวมประมาณ ${fmtDist(pathLen(pin))}${vis?` · เยี่ยมแล้ว ${vis}`:""}`),
+    el("button",{class:"btn",id:"planClr",type:"button",onclick:clearPlanAsk},ic("trash","s"),"ล้างแผน")));
   const mp=el("div",{class:"planmap",id:"planMap"}); box.append(mp);
   const ctl=el("div",{class:"ctl",style:"margin:0 0 12px"},el("button",{class:"btn",type:"button",onclick:()=>{ const q=getPlan(); const pi=q.ids.filter(x=>BYID[x]&&BYID[x].pin).reverse(); q.ids=pi.concat(q.ids.filter(x=>!pi.includes(x))); q.manual=true; savePlan(q); renderPlan(); }},ic("swap","s"),"สลับต้น–ปลาย"));
   if(p.manual) ctl.append(el("button",{class:"btn",type:"button",onclick:()=>{ savePlan(routePlan(getPlan())); renderPlan(); }},ic("route","s"),"จัดเส้นทางใหม่"));
