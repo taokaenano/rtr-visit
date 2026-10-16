@@ -439,7 +439,7 @@ input.tp{cursor:pointer;caret-color:transparent}
 <script>
 "use strict";
 /* RTR Visit — field app r21 */
-const APP_VER="r21d";
+const APP_VER="r22";
 const API="https://script.google.com/macros/s/AKfycbysDARyiBpYsW6Yp1m7xrIEMn5x2uMsMC80Alwy33porWmMCsIhqvWTL1gV5rbhqkwwfw/exec";
 /* ===== shared by the field app (RTR Visit) and the dashboard (RTR Visit Dashboard) — same rules everywhere ===== */
 const rxName=t=>String(t||"").trim().replace(/^คุณ\s*/,"").replace(/\s+/g,"").toLowerCase(); // a person: ignore "คุณ", spaces and case
@@ -507,6 +507,11 @@ function rxShare(s){ const n=s.ga.length, ga=s.ga[n-1]||0, sv=s.ssv||null, vs=s.
   return v; }
 const rxShareTxt=x=>`true ${x.v.toLocaleString("th-TH",{maximumFractionDigits:1})}% · AIS ${(Math.round((100-x.v)*10)/10).toLocaleString("th-TH",{maximumFractionDigits:1})}%`;
 const rxSharePill=x=>x.src==="visit"?["จากการเยี่ยม "+x.at.toLocaleDateString("th-TH",{day:"numeric",month:"short"}),"ok"]:["รอตรวจสอบ · "+(x.m||"แบบสำรวจ"),"warn"];
+
+/* nano cluster group, taken as-is from AREA_NN column "กลุ่ม" (SMP_area_group_1.xlsx) -> [label, key]; the key picks the colour */
+const RX_NNG={"ชนะทั้งคู่":"win","ชนะ 1 บริการ":"tie","สูสีหรือแพ้":"lose"};
+const RX_NNG_COL={win:"#2563c4",tie:"#a8a29e",lose:"#e1251b",na:"#d6d3ce"};
+function rxNnGroup(g){ g=String(g==null?"":g).trim(); return RX_NNG[g]?[g,RX_NNG[g]]:null; }
 
 
 /* ================= basics ================= */
@@ -794,16 +799,15 @@ function kpiBlock(s){ const k=el("div",{class:"kpi"});
   s.seg.forEach((v,i)=>{ if(v>0) bar.append(el("span",{style:`width:${v/tot*100}%;background:var(${MIX[i][1]})`})); lg.append(el("span",{},el("i",{style:`background:var(${MIX[i][1]})`}),MIX[i][0]+" ",el("b",{text:Math.round(v/tot*100)+"%"}))); });
   k.append(bar,lg); return k; }
 const okXY=s=>!!s&&s.pin;
-const level=v=>v>52?["true ชนะ","win"]:(v>=48?["สูสี","tie"]:["true แพ้","lose"]);
 function areaInfo(s,gps){ let hb=null, ni=null;
   if(s&&s.hb){ hb={v:s.hb[0]}; ni=s.hb[1]; }
   else { const p=okXY(s)?{lat:s.lat,lon:s.lon}:(gps?{lat:gps.lat,lon:gps.lon}:null);
     if(p){ let best=null,bd=1e12; for(const h of HBS){ const d=dist(p.lat,p.lon,h[0],h[1]); if(d<bd){ bd=d; best=h; } } if(best&&bd<=HB_MAXM){ hb={v:best[2]}; ni=best[3]; } } }
-  return {hb,nn:ni!=null&&NNS[ni]?{id:NNS[ni][0],v:NNS[ni][1]}:null}; }
+  return {hb,nn:ni!=null&&NNS[ni]?{id:NNS[ni][0],v:NNS[ni][1],g:NNS[ni][2]||""}:null}; }
 function areaBlock(s,gps){ const b=el("div",{class:"blk"},el("h4",{text:"พื้นที่"})), A=areaInfo(s,gps);
-  if(A.nn){ const L=level(A.nn.v), d=MS_PROV==null?null:Math.round((A.nn.v-MS_PROV)*10)/10;
+  if(A.nn){ const L=rxNnGroup(A.nn.g), d=MS_PROV==null?null:Math.round((A.nn.v-MS_PROV)*10)/10;
     b.append(el("div",{class:"arow"},el("div",{},el("div",{text:"Nano Cluster "+A.nn.id}),el("div",{class:"small",text:d==null?"":(d===0?`เท่ากับทั้งจังหวัด ${MS_PROV.toFixed(1)}%`:`${d>0?"สูงกว่า":"ต่ำกว่า"}ทั้งจังหวัด ${Math.abs(d).toFixed(1)} จุด`)})),
-      el("div",{},el("span",{class:"lv "+L[1],text:L[0]}),el("div",{class:"small num",text:`true ${A.nn.v.toFixed(1)}% · AIS ${(100-A.nn.v).toFixed(1)}%`})))); }
+      el("div",{},L?el("span",{class:"lv "+L[1],text:L[0]}):null,A.nn.v!=null?el("div",{class:"small num",text:`true ${A.nn.v.toFixed(1)}% · AIS ${(100-A.nn.v).toFixed(1)}%`}):null))); }
   else b.append(el("div",{class:"small",text:"ไม่มีข้อมูลพื้นที่"}));
   if(s){ const x=s.sh, r=el("div",{class:"arow"},el("div",{text:"Sale share ในร้าน"}));
     if(x){ const [t,k]=rxSharePill(x); r.append(el("div",{},el("span",{class:"pill "+k,text:t}),el("div",{class:"small num",text:rxShareTxt(x)}))); } else r.append(el("div",{class:"small",text:"ไม่มีข้อมูล"})); b.append(r); }
@@ -1261,7 +1265,7 @@ function payload(){ const p=path(), has=x=>p.includes(x)&&!(x==="shop"&&notSell(
     competitors:p.includes("shop")?{carriers:comp,ais:comp.includes("AIS")?{sims_per_month:numOrNull("aisSims"),typical_pack_baht:numOrNull("aisPack")}:null,
       other:comp.includes("อื่นๆ")?{name:val("othName")||null,sims_per_month:numOrNull("othSims"),typical_pack_baht:numOrNull("othPack")}:null,best_seller:radio("best")||null}:null,
     campaign:has("shop")&&(val("campName")||radio("campPosm")||radio("campKnow")||radio("campSell")||val("campFb")||DR.photos.campaign.length)?{name:val("campName")||null,materials:radio("campPosm")||null,store_understands:radio("campKnow")||null,customer_response:radio("campSell")||null,feedback:val("campFb")||null}:null,
-    profile:prof?{part:"ครบ",complete:true,review:DR.isNew?"ครั้งแรก":(DR.profReview||"ครั้งแรก"),answers:pfAnswers(),photos:["front","counter","media"].filter(k=>DR.photos[k].length),shown:{nano_cluster:A.nn?A.nn.id:null,true_share_nn:A.nn?A.nn.v:null,true_share_hb:A.hb?A.hb.v:null}}:null,
+    profile:prof?{part:"ครบ",complete:true,review:DR.isNew?"ครั้งแรก":(DR.profReview||"ครั้งแรก"),answers:pfAnswers(),photos:["front","counter","media"].filter(k=>DR.photos[k].length),shown:{nano_cluster:A.nn?A.nn.id:null,nano_group:A.nn&&A.nn.g?A.nn.g:null,true_share_nn:A.nn?A.nn.v:null,true_share_hb:A.hb?A.hb.v:null}}:null,
     pin:!DR.isNew&&DR.pin?{lat:DR.pin.lat,lon:DR.pin.lon,acc:DR.pin.acc,at:DR.pin.at}:null, pin_skip:!DR.isNew&&!DR.pin?(DR.pinSkip||null):null }; }
 
 /* ---- summary ---- */

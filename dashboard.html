@@ -428,6 +428,11 @@ function rxShare(s){ const n=s.ga.length, ga=s.ga[n-1]||0, sv=s.ssv||null, vs=s.
 const rxShareTxt=x=>`true ${x.v.toLocaleString("th-TH",{maximumFractionDigits:1})}% · AIS ${(Math.round((100-x.v)*10)/10).toLocaleString("th-TH",{maximumFractionDigits:1})}%`;
 const rxSharePill=x=>x.src==="visit"?["จากการเยี่ยม "+x.at.toLocaleDateString("th-TH",{day:"numeric",month:"short"}),"ok"]:["รอตรวจสอบ · "+(x.m||"แบบสำรวจ"),"warn"];
 
+/* nano cluster group, taken as-is from AREA_NN column "กลุ่ม" (SMP_area_group_1.xlsx) -> [label, key]; the key picks the colour */
+const RX_NNG={"ชนะทั้งคู่":"win","ชนะ 1 บริการ":"tie","สูสีหรือแพ้":"lose"};
+const RX_NNG_COL={win:"#2563c4",tie:"#a8a29e",lose:"#e1251b",na:"#d6d3ce"};
+function rxNnGroup(g){ g=String(g==null?"":g).trim(); return RX_NNG[g]?[g,RX_NNG[g]]:null; }
+
 const dPills=s=>rxPills(s).filter(x=>!(x[1]==="tag"&&x[0]==="ร้านใหม่"&&s.s==="ร้านใหม่"));
 const stPill=(s,st)=>el("span",{class:"st s"+({"ขายอยู่":1,"inactive":2,"ร้านใหม่":3}[s.s]||2),style:st||null,text:s.s});
 const pillEl=([t,k])=>el("span",{class:"pill "+k},k==="due"?el("i"):null,t);
@@ -477,7 +482,7 @@ $("#btnLogout").addEventListener("click",()=>lock("ออกจากระบ�
 let TAMP={}, D=null, ST=[], BYID={}, MONTHS=[], LASTM="", ASOF=null, V=[], P=[], PR=[], NN={}, OWNERS=[], OWNN={}, HB=[], PINQ=[], EDITS=[], CFG={far:300,acc:30};
 function init(d){
   D=d; const L=d.months.length, take=Math.min(8,L); MONTHS=d.months.slice(L-take); LASTM=MONTHS[MONTHS.length-1]||"";
-  ASOF=rxAsof(d.asof); NN={}; (d.nns||[]).forEach(x=>NN[x[0]]=x[1]); HB=(d.hbs||[]).filter(h=>h[0]!=null&&h[1]!=null);
+  ASOF=rxAsof(d.asof); NN={}; (d.nns||[]).forEach(x=>NN[x[0]]={v:x[1],g:x[2]||""}); HB=(d.hbs||[]).filter(h=>h[0]!=null&&h[1]!=null);
   V=(d.visits||[]).map(r=>({r, id:str(r.visit_id), at:toDate(r["เริ่มเยี่ยม"])||toDate(r["ส่งจากเครื่อง"])||toDate(r["รับข้อมูลเมื่อ"]), sid:str(r.STORE_ID), name:str(r["ชื่อร้าน"]), filler:str(r["ผู้กรอก"]),
     kind:str(r["ประเภทการเยี่ยม"]), a:str(r["อำเภอ"]), lat:num(r.lat), lon:num(r.lon), nProb:num(r["จำนวนปัญหา"]), noProb:str(r["ไม่พบปัญหา"]), carriers:str(r["ค่ายที่ขาย"]), ais:num(r["AIS ซิม/เดือน"]),
     aisPack:num(r["AIS แพ็ก (บาท)"]), best:str(r["ขายดีสุด"]), camp:str(r["แคมเปญ"]), front:str(r["รูปหน้าร้าน"]), prof:str(r["โปรไฟล์"]), recruit:str(r["ร้านใหม่: ผลการชวน"]),
@@ -499,7 +504,7 @@ function init(d){
   const vBy={}, pBy={}; V.forEach(v=>{ if(v.sid) (vBy[v.sid]=vBy[v.sid]||[]).push(v); }); P.forEach(p=>{ if(p.sid) (pBy[p.sid]=pBy[p.sid]||[]).push(p); });
   ST.forEach(s=>{ BYID[s.id]=s; s.vis=vBy[s.id]||[]; s.last=s.vis.length?s.vis[0].at:null; s.probs=pBy[s.id]||[]; s.openP=s.probs.filter(p=>p.open); s.prof=(d.profiles||{})[s.id]||null;
     s.ssv=(d.ss||{})[s.id]||null; const lv=s.vis.find(v=>v.carriers); s.vsh=lv?{at:lv.at,carriers:lv.carriers,ais:lv.ais}:null;
-    s.okxy=s.lat!=null&&s.lon!=null&&!s.f.includes("outside")&&!s.f.includes("nogps"); s.nnv=NN[s.nn]!=null?NN[s.nn]:null; analyse(s); });
+    s.okxy=s.lat!=null&&s.lon!=null&&!s.f.includes("outside")&&!s.f.includes("nogps"); s.nnv=NN[s.nn]&&NN[s.nn].v!=null?NN[s.nn].v:null; s.nng=NN[s.nn]?NN[s.nn].g:""; analyse(s); });
   // people: the same person written differently (case / spaces / "คุณ") counts once
   OWNN={}; ST.forEach(s=>{ if(s.o) OWNN[rxName(s.o)]=OWNN[rxName(s.o)]||s.o; });
   OWNERS=Object.values(OWNN).sort((a,b)=>a.localeCompare(b,"th"));
@@ -517,6 +522,7 @@ function analyse(s){
   s.key=(s.n+"|"+s.id+"|"+s.c+"|"+s.ad+"|"+s.o+"|"+s.t+"|"+s.a).toLowerCase().replace(/\s+/g,"");
 }
 function benchTxt(s){ const a=[];
+  if(s.nng) a.push(`Nano Cluster ${s.nng}`);
   if(s.nnv!=null) a.push(`true ในพื้นที่ ${s.nnv.toFixed(1)}% · จังหวัด ${D.prov!=null?Number(D.prov).toFixed(1)+"%":"ไม่มีข้อมูล"}`);
   return a.join("\n"); }
 const trendOf=s=>{ const gl=g=>g==="ไม่มียอด"?"–":g; return s.s==="inactive"?null:(GO[s.g9]<GO[s.g8]?[`ขึ้น ${gl(s.g8)}→${gl(s.g9)}`,"up"]:(GO[s.g9]>GO[s.g8]?[`ตก ${gl(s.g8)}→${gl(s.g9)}`,"dn"]:["คงเกรด",""])); };
@@ -960,7 +966,7 @@ function rStore(L,list){
   const kv=(k,v)=>[el("span",{text:k}),v!=null&&typeof v==="object"?v:el("div",{text:v==null||v===""?"ไม่มีข้อมูล":v})];
   const share=s.sh?el("div",{class:"shv"},el("span",{text:rxShareTxt(s.sh)+" "}),pillEl(rxSharePill(s.sh))):null;
   L.append(el("h2",{class:"sec",text:"ข้อมูลร้าน"}),el("div",{class:"card"},el("div",{class:"kv"},...kv("สถานะ",s.s),...kv("ผู้ดูแล",s.o||"ไม่มีผู้ดูแล"),...kv("ที่อยู่",s.ad),...kv("อำเภอ / ตำบล",[s.a,s.t].filter(Boolean).join(" / ")),
-    ...kv("ประเภท",[s.ty,s.st].filter(Boolean).join(" · ")),...kv("Nano Cluster",s.nn?(s.nn+(s.nnv!=null?` · true ${s.nnv.toFixed(1)}%`:"")):""),...kv("Sale share ในร้าน",share),
+    ...kv("ประเภท",[s.ty,s.st].filter(Boolean).join(" · ")),...kv("Nano Cluster",s.nn?([s.nn,s.nng||null,s.nnv!=null?`true ${s.nnv.toFixed(1)}%`:null].filter(Boolean).join(" · ")):""),...kv("Sale share ในร้าน",share),
     ...(s.cl?kv("แจ้งปิด (แบบสำรวจ)",s.cl):[]),
     ...kv("เติมเงินเดือนแรกเฉลี่ย/ซิม",s.ipp!=null?"฿"+fmt(s.ipp)+` (${LASTM})`:""),...kv("ลูกค้า "+LASTM,s.seg?`MASS ${s.seg[0]} · MIGRANT ${s.seg[1]} · TOURIST ${s.seg[2]}`:""),...kv("ข้อมูลที่ขาด",s.extra.join(" · ")||"ไม่มี"))));
   L.append(el("h2",{class:"sec",text:`ประวัติการเยี่ยม (${s.vis.length})`}));
@@ -1052,8 +1058,8 @@ const LENSES={
   visit:{t:"เยี่ยมล่าสุด",cats:()=>[["d30","≤ 30 วัน","#1e4f99"],["d90","31–90 วัน","#5b8bd0"],["old","> 90 วัน","#a9c1e4"],["never","ยังไม่เคยเยี่ยม","#d6d3ce"]],k:s=>{ const d=days(s.last); return d==null?"never":(d<=30?"d30":(d<=90?"d90":"old")); }},
   prob:{t:"ปัญหาค้าง",cats:()=>[["yes","มีปัญหาค้าง","#e1251b"],["no","ไม่มี","#c4beb3"]],k:s=>s.openP.length?"yes":"no"},
   owner:{t:"ผู้ดูแล",cats:()=>{ const pal=["#2563c4","#c2410c","#7457b8","#2f8a4f","#a16207"]; return OWNERS.map((o,i)=>[o,o,pal[i]||"#5f6670"]).concat([["__none","ไม่มีผู้ดูแล","#d6d3ce"]]); },k:s=>s.o||"__none"},
-  share:{t:"ส่วนแบ่ง true",cats:()=>[["win","true ชนะ (>52%)","#2563c4"],["tie","สูสี (48–52%)","#a8a29e"],["lose","true แพ้ (<48%)","#e1251b"],["na","ไม่มีข้อมูล","#d6d3ce"]],k:s=>s.nnv==null?"na":(s.nnv>52?"win":(s.nnv>=48?"tie":"lose"))}};
-const lvl=v=>v>52?"#2563c4":(v>=48?"#a8a29e":"#e1251b");
+  share:{t:"กลุ่ม Nano Cluster",cats:()=>Object.entries(RX_NNG).map(([g,k])=>[k,g,RX_NNG_COL[k]]).concat([["na","ไม่มีข้อมูล",RX_NNG_COL.na]]),k:s=>{ const x=rxNnGroup(s.nng); return x?x[1]:"na"; }}};
+const nnCol=id=>{ const x=rxNnGroup(NN[id]&&NN[id].g); return RX_NNG_COL[x?x[1]:"na"]; };
 const LAYER={S:0,N:1,C:2,B:3,A:4}, LETTER={A:"A",B:"B",C:"C",N:"–",S:"×"};
 function buildMap(){ if(typeof L==="undefined"){ $("#legend").textContent="โหลดแผนที่ไม่ได้"; return; }
   if(!map){ map=L.map("map",{zoomControl:false,preferCanvas:true}).setView([13.62,100.65],11); L.control.zoom({position:"bottomright"}).addTo(map); cv=L.canvas({padding:.3});
@@ -1072,7 +1078,7 @@ function buildMap(){ if(typeof L==="undefined"){ $("#legend").textContent="โ�
   Object.values(MK).forEach(m=>m.remove()); MK={};
   ST.forEach(s=>{ if(!s.okxy) return; const m=L.circleMarker([s.lat,s.lon],{renderer:cv,radius:6,weight:1.5,color:"#ffffff",fillOpacity:.95});
     m.bindTooltip(()=>tipHtml(s),{direction:"top",offset:[0,-6],opacity:1}); m.on("mouseover",()=>hover(s.id,true,true)); m.on("mouseout",()=>hover(s.id,false,true)); m.on("click",()=>showCard(s.id)); MK[s.id]=m; });
-  if(hbLayer) hbLayer.remove(); hbLayer=L.layerGroup(HB.map(h=>L.circleMarker([h[0],h[1]],{renderer:cv,radius:3,weight:0,fillColor:lvl(h[2]),fillOpacity:.55}).bindTooltip(()=>el("div",{},el("div",{text:"Happy Block · Nano Cluster "+h[3]}),el("div",{text:"true "+(+h[2]).toFixed(1)+"%"})),{direction:"top"})));
+  if(hbLayer) hbLayer.remove(); hbLayer=L.layerGroup(HB.map(h=>L.circleMarker([h[0],h[1]],{renderer:cv,radius:3,weight:0,fillColor:nnCol(h[3]),fillOpacity:.55}).bindTooltip(()=>el("div",{},el("div",{text:"Happy Block · Nano Cluster "+h[3]+(NN[h[3]]&&NN[h[3]].g?" · "+NN[h[3]].g:"")}),el("div",{text:"true "+(+h[2]).toFixed(1)+"%"})),{direction:"top"})));
   if(vLayer) vLayer.remove(); vLayer=L.layerGroup(V.filter(v=>v.lat!=null&&v.lon!=null).map(v=>L.circleMarker([v.lat,v.lon],{renderer:cv,radius:4,weight:2,color:"#1d2125",fillColor:"#ffffff",fillOpacity:1}).bindTooltip(()=>el("div",{},el("div",{text:"จุดที่ไปเยี่ยม · "+(v.name||v.sid)}),el("div",{text:fmtD(v.at)+" · "+(v.filler||"")})),{direction:"top"})));
 }
 function tipHtml(s){ const e=el("div",{},el("div",{style:"font-weight:600",text:s.n}),el("div",{text:`${s.s==="inactive"?"inactive":"เกรด "+s.g9} · GA ${LASTM} ${fmt(s.ga[s.ga.length-1])} · ${s.o||"ไม่มีผู้ดูแล"}`}),
