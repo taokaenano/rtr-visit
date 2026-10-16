@@ -235,6 +235,9 @@ table.t tr.on td{background:var(--brass-soft)}
 .slt tr.hl td,.slt tr.on td{background:var(--brass-soft)}
 .slt .nm{font-weight:600;font-size:14px;display:flex;align-items:center;gap:4px}
 .slt .nm svg{flex:none}
+.pinb{display:inline-flex;align-items:center;justify-content:center;border:0;background:none;padding:4px 6px;margin:-4px 0;border-radius:8px;cursor:pointer;flex:none}.pinb:hover{background:var(--brass-soft)}.pinb:focus-visible{outline:2px solid #2563c4;outline-offset:1px}
+.nm1{display:flex;align-items:center;gap:4px}
+@media (max-width:900px){.pinb{padding:8px 10px;margin:-8px -4px}}
 .slt .sub{display:flex;white-space:nowrap;align-items:center;gap:6px;margin-top:3px;font:12px 'Kanit',sans-serif;color:var(--ink2)}
 .slt .tag{white-space:nowrap;font:600 10.5px 'Kanit',sans-serif;color:var(--ink2);border:1px solid var(--line);border-radius:5px;padding:1px 5px}
 .slt .tag.ina{color:#8a857c;background:#f2f1ee}
@@ -598,7 +601,7 @@ function render(){ if(!D) return; const list=FS(); if(CARD&&!list.some(s=>s.id==
 function decide(...parts){ const d=$("#decide"); d.innerHTML=""; parts.filter(Boolean).forEach((p,i)=>{ if(i) d.append(" · "); d.append(typeof p==="string"?p:p); }); }
 const B=t=>el("b",{text:t});
 const back=(t,fn)=>el("button",{class:"btn sm",type:"button",style:"margin-bottom:10px;display:inline-flex;align-items:center;gap:4px",onclick:fn},ic("back"),t);
-const navA=s=>s&&s.okxy?el("a",{class:"navb",href:`https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lon}&travelmode=driving`,target:"_blank",rel:"noopener"},ic("nav"),"นำทาง"):null;
+const navA=s=>s&&s.okxy?el("a",{class:"navb",href:`https://www.google.com/maps/search/?api=1&query=${s.lat},${s.lon}`,target:"_blank",rel:"noopener"},ic("pin"),"พิกัดร้าน"):null;
 const ADM="rtrAdminName"; const adminName=()=>{ try{ return localStorage.getItem(ADM)||""; }catch(e){ return ""; } }; const setAdminName=v=>{ try{ localStorage.setItem(ADM,v); }catch(e){} };
 /* "แก้แล้ว" for one open problem: who closed it is kept with the date */
 function closeBox(p){ if(!p.open) return el("div",{class:"small",style:"margin-top:6px",text:`แก้แล้ว${p.closedBy?" · "+p.closedBy:""}${p.closedAt?" · "+fmtD(p.closedAt):""}`});
@@ -662,10 +665,11 @@ function rOverview(L,list){
 /* ---------- store list (tambon list + tab ร้าน): name · pills · type/owner · GA · 8-month grades ---------- */
 function pinIco(){ const NS="http://www.w3.org/2000/svg", s=document.createElementNS(NS,"svg"); s.setAttribute("width","12"); s.setAttribute("height","14"); s.setAttribute("viewBox","0 0 12 14");
   const p=document.createElementNS(NS,"path"); p.setAttribute("d","M6 0a5 5 0 0 0-5 5c0 3.6 5 9 5 9s5-5.4 5-9a5 5 0 0 0-5-5zm0 7a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"); p.setAttribute("fill","#2563c4"); s.append(p); return s; }
+const pinBtn=s=>s&&s.okxy?el("button",{class:"pinb",type:"button","aria-label":"ดูบนแผนที่",title:"ดูบนแผนที่",onclick:e=>{ e.stopPropagation(); showCard(s.id); }},pinIco()):null;
 function storeTable(ss,more){ const n=MONTHS.length, gl=g=>g==="ไม่มียอด"?"–":g, tb=el("tbody");
   ss.forEach(s=>{ const tr=trendOf(s), pl=dPills(s);
-    tb.append(el("tr",{class:"click"+(CARD===s.id?" on":""),"data-id":s.id,onclick:()=>showCard(s.id),onmouseenter:()=>hover(s.id,true),onmouseleave:()=>{ if(CARD!==s.id) hover(s.id,false); }},
-      el("td",{class:"c-nm"},el("div",{class:"nm"},el("span",{text:s.n}),s.okxy?pinIco():null),el("div",{class:"sub"},stPill(s),el("span",{text:s.id})),pillsEl(pl,"margin-top:5px")),
+    tb.append(el("tr",{class:"click"+(CARD===s.id?" on":""),"data-id":s.id,onclick:()=>openStore(s.id),onmouseenter:()=>hover(s.id,true),onmouseleave:()=>{ if(CARD!==s.id) hover(s.id,false); }},
+      el("td",{class:"c-nm"},el("div",{class:"nm"},el("span",{text:s.n}),pinBtn(s)),el("div",{class:"sub"},stPill(s),el("span",{text:s.id})),pillsEl(pl,"margin-top:5px")),
       el("td",{class:"c-ty"},el("div",{class:"ty",text:s.ty||"–"}),el("div",{class:"ow",text:s.o||"ไม่มีผู้ดูแล"})),
       el("td",{class:"c-ga n ga"},s.ga[n-1]==null?el("b",{text:"–"}):el("b",{text:fmt(s.ga[n-1])}),el("span",{text:s.ga[n-1]==null?(s.lastSale?"ล่าสุด "+s.lastSale:"ไม่มียอด"):(s.ipp!=null?"เติมเงินเดือนแรกเฉลี่ย ฿"+fmt(s.ipp)+"/ซิม":"ซิม")})),
       el("td",{class:"c-gr"},el("div",{class:"sqs"},...s.ga.map((x,i)=>{ const g=gName(x); return el("span",{class:"sq"+(i===n-1?" cur":""),title:`${MONTHS[i]} ${x==null?"ไม่มียอด":fmt(x)}`,style:`background:${GC[g]}`,text:gl(g)}); }),tr?el("span",{class:"pill "+tr[1],style:"margin-left:6px"},el("i"),tr[0]):null)))); });
@@ -885,8 +889,8 @@ function rVisits(L,list){ if(VSEL) return rVisit(L);
 /* stores where AIS sells more than true (sale share < 50%) */
 function rShare(L,over){
   if(!over.length){ L.append(el("div",{class:"empty",text:ST.some(s=>s.sh)?"ไม่มีร้านที่ AIS ขายมากกว่า true":"ยังไม่มีข้อมูล"})); return; }
-  const tb=el("tbody"); over.slice().sort((a,b)=>a.sh.v-b.sh.v).slice(0,40).forEach(s=>tb.append(el("tr",{class:"click","data-id":s.id,onclick:()=>showCard(s.id),onmouseenter:()=>hover(s.id,true),onmouseleave:()=>{ if(CARD!==s.id) hover(s.id,false); }},
-    el("td",{},el("div",{text:s.n}),el("div",{class:"wmeta",text:[s.o||"ไม่มีผู้ดูแล",s.t?"ต."+s.t:null].filter(Boolean).join(" · ")})),el("td",{class:"n",text:rxShareTxt(s.sh)}),el("td",{},pillEl(rxSharePill(s.sh))))));
+  const tb=el("tbody"); over.slice().sort((a,b)=>a.sh.v-b.sh.v).slice(0,40).forEach(s=>tb.append(el("tr",{class:"click","data-id":s.id,onclick:()=>openStore(s.id),onmouseenter:()=>hover(s.id,true),onmouseleave:()=>{ if(CARD!==s.id) hover(s.id,false); }},
+    el("td",{},el("div",{class:"nm1"},el("span",{text:s.n}),pinBtn(s)),el("div",{class:"wmeta",text:[s.o||"ไม่มีผู้ดูแล",s.t?"ต."+s.t:null].filter(Boolean).join(" · ")})),el("td",{class:"n",text:rxShareTxt(s.sh)}),el("td",{},pillEl(rxSharePill(s.sh))))));
   L.append(el("div",{class:"tw"},el("table",{class:"t"},el("thead",{},el("tr",{},el("th",{text:"ร้าน"}),el("th",{class:"n",text:"ส่วนแบ่งในร้าน"}),el("th",{text:"ที่มา"}))),tb))); }
 /* visits of month m vs GA of the month after; waits until that month's sales are in */
 function impactCard(vs){ const byM={}; vs.forEach(v=>{ if(v.at&&v.sid) (byM[v.at.getFullYear()*12+v.at.getMonth()]=byM[v.at.getFullYear()*12+v.at.getMonth()]||new Set()).add(v.sid); });
